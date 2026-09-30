@@ -19,6 +19,70 @@ CREATE TABLE IF NOT EXISTS users (
     created_at      TEXT NOT NULL,
     CHECK (phone IS NOT NULL OR wa_user_id IS NOT NULL)
 );
+
+CREATE TABLE IF NOT EXISTS care_links (
+    id                  INTEGER PRIMARY KEY,
+    caregiver_id        INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    patient_id          INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    alert_on_missed     INTEGER NOT NULL DEFAULT 1 CHECK (alert_on_missed IN (0, 1)),
+    alert_after_minutes INTEGER NOT NULL DEFAULT 60,
+    created_at          TEXT NOT NULL,
+    UNIQUE (caregiver_id, patient_id),
+    CHECK (caregiver_id != patient_id)
+);
+
+CREATE TABLE IF NOT EXISTS drug_reference (
+    id          INTEGER PRIMARY KEY,
+    moph_code   TEXT UNIQUE,
+    brand_name  TEXT NOT NULL,
+    ingredients TEXT,
+    strength    TEXT,
+    form        TEXT,
+    pack_size   TEXT,
+    price_lbp   INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS voice_clips (
+    id          INTEGER PRIMARY KEY,
+    recorded_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    file_path   TEXT NOT NULL,
+    wa_media_id TEXT,
+    created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS medicines (
+    id           INTEGER PRIMARY KEY,
+    patient_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    drug_id      INTEGER REFERENCES drug_reference(id),
+    display_name TEXT NOT NULL,
+    pack_size    INTEGER,
+    tablets_left REAL,
+    active       INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+    created_at   TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS schedules (
+    id            INTEGER PRIMARY KEY,
+    medicine_id   INTEGER NOT NULL REFERENCES medicines(id) ON DELETE CASCADE,
+    time_of_day   TEXT NOT NULL
+                  CHECK (time_of_day GLOB '[0-2][0-9]:[0-5][0-9]'),
+    dose_amount   REAL NOT NULL DEFAULT 1,
+    voice_clip_id INTEGER REFERENCES voice_clips(id) ON DELETE SET NULL,
+    active        INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))
+);
+
+CREATE TABLE IF NOT EXISTS dose_events (
+    id           INTEGER PRIMARY KEY,
+    schedule_id  INTEGER NOT NULL REFERENCES schedules(id) ON DELETE CASCADE,
+    due_at       TEXT NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'pending'
+                 CHECK (status IN ('pending', 'taken', 'later', 'missed')),
+    reason       TEXT CHECK (reason IN ('forgot', 'ran_out', 'side_effect',
+                                        'cost', 'other')),
+    reply_text   TEXT,
+    responded_at TEXT,
+    UNIQUE (schedule_id, due_at)
+);
 """
 
 
