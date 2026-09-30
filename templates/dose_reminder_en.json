@@ -1,0 +1,27 @@
+{
+  "name": "dose_reminder",
+  "language": "en",
+  "category": "UTILITY",
+  "parameter_format": "named",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hello {{patient_name}}, it is time to take your medicine {{medicine}}. Dose: {{dose}}. Please tap a button below to reply.",
+      "example": {
+        "body_text_named_params": [
+          {"param_name": "patient_name", "example": "Georges"},
+          {"param_name": "medicine", "example": "Amlor 5mg"},
+          {"param_name": "dose", "example": "1 tablet"}
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {"type": "QUICK_REPLY", "text": "Taken"},
+        {"type": "QUICK_REPLY", "text": "Later"},
+        {"type": "QUICK_REPLY", "text": "Problem"}
+      ]
+    }
+  ]
+}

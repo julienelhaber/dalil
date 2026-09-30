@@ -1,0 +1,25 @@
+{
+  "name": "refill_warning",
+  "language": "ar",
+  "category": "UTILITY",
+  "parameter_format": "named",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "مرحباً {{patient_name}}، بقي لديك دواء {{medicine}} لحوالي {{days_left}} أيام. يرجى شراء علبة جديدة قريباً حتى لا ينفد الدواء.",
+      "example": {
+        "body_text_named_params": [
+          {"param_name": "patient_name", "example": "جورج"},
+          {"param_name": "medicine", "example": "Amlor 5mg"},
+          {"param_name": "days_left", "example": "5"}
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {"type": "QUICK_REPLY", "text": "حسناً"}
+      ]
+    }
+  ]
+}

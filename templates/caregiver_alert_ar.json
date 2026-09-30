@@ -1,0 +1,26 @@
+{
+  "name": "caregiver_alert",
+  "language": "ar",
+  "category": "UTILITY",
+  "parameter_format": "named",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "مرحباً {{caregiver_name}}، لم يصلنا تأكيد من {{patient_name}} بأخذ دواء {{medicine}} الذي كان موعده الساعة {{due_time}}. ننصح بالتواصل للاطمئنان.",
+      "example": {
+        "body_text_named_params": [
+          {"param_name": "caregiver_name", "example": "ريتا"},
+          {"param_name": "patient_name", "example": "جورج"},
+          {"param_name": "medicine", "example": "Amlor 5mg"},
+          {"param_name": "due_time", "example": "8:00 صباحاً"}
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {"type": "QUICK_REPLY", "text": "سأتواصل"}
+      ]
+    }
+  ]
+}

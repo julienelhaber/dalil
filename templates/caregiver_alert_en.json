@@ -1,0 +1,26 @@
+{
+  "name": "caregiver_alert",
+  "language": "en",
+  "category": "UTILITY",
+  "parameter_format": "named",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hello {{caregiver_name}}. We have not received a confirmation from {{patient_name}} for {{medicine}}, which was due at {{due_time}}. You may want to check on them.",
+      "example": {
+        "body_text_named_params": [
+          {"param_name": "caregiver_name", "example": "Rita"},
+          {"param_name": "patient_name", "example": "Georges"},
+          {"param_name": "medicine", "example": "Amlor 5mg"},
+          {"param_name": "due_time", "example": "8:00 AM"}
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {"type": "QUICK_REPLY", "text": "I'll check"}
+      ]
+    }
+  ]
+}

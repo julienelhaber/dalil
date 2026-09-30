@@ -1,0 +1,27 @@
+{
+  "name": "dose_reminder",
+  "language": "ar",
+  "category": "UTILITY",
+  "parameter_format": "named",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "مرحباً {{patient_name}}، حان وقت دواء {{medicine}}. الجرعة: {{dose}}. يرجى الضغط على أحد الأزرار أدناه للرد.",
+      "example": {
+        "body_text_named_params": [
+          {"param_name": "patient_name", "example": "جورج"},
+          {"param_name": "medicine", "example": "Amlor 5mg"},
+          {"param_name": "dose", "example": "حبة واحدة"}
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {"type": "QUICK_REPLY", "text": "أخذته"},
+        {"type": "QUICK_REPLY", "text": "لاحقاً"},
+        {"type": "QUICK_REPLY", "text": "لدي مشكلة"}
+      ]
+    }
+  ]
+}
