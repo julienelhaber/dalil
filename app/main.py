@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request, Response, HTTPException
 from app.care import handle_check, handle_reason, handle_typed_reason  # STEP 3
 from app.config import settings
 from app.db import init_db, upsert_inbound_user  # NEW
+from app.photo import handle_med_no, handle_med_yes, handle_photo  # STEP 4
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
 from app.whatsapp import send_text
 
@@ -64,6 +65,9 @@ async def handle_message(user, msg, is_new):
         reply_id = msg["interactive"].get("button_reply", {}).get("id", "")
         if await handle_reply_id(user, reply_id):
             return
+    elif kind == "image":  # STEP 4
+        if await handle_photo(user, msg["image"]["id"]):
+            return
     elif kind == "text":
         text = msg["text"]["body"]  # STEP 3: a reason typed after Problem comes first
         if await handle_typed_reason(user, text) or await handle_text(user, text):
@@ -82,6 +86,10 @@ async def handle_reply_id(user, reply_id):
         return await handle_reason(user, int(parts[1]), parts[2])
     if parts[0] == "CHECK" and len(parts) == 2:  # STEP 3
         return await handle_check(user, int(parts[1]))
+    if parts[0] == "MED_YES" and len(parts) == 2:  # STEP 4
+        return await handle_med_yes(user, int(parts[1]))
+    if parts[0] == "MED_NO":  # STEP 4
+        return await handle_med_no(user)
     return False
 
 

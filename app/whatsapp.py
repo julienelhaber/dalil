@@ -60,3 +60,13 @@ async def send_buttons(to: str, body: str, buttons: list):
             ]},
         },
     })
+
+
+
+async def download_media(media_id: str) -> bytes:
+    headers = {"Authorization": f"Bearer {settings.WHATSAPP_TOKEN}"}
+    base = f"https://graph.facebook.com/{settings.GRAPH_VERSION}"
+    async with httpx.AsyncClient(timeout=30) as client:
+        meta = await client.get(f"{base}/{media_id}", headers=headers)
+        r = await client.get(meta.json()["url"], headers=headers)
+    return r.content
