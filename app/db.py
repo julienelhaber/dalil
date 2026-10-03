@@ -32,14 +32,16 @@ CREATE TABLE IF NOT EXISTS care_links (
 );
 
 CREATE TABLE IF NOT EXISTS drug_reference (
-    id          INTEGER PRIMARY KEY,
-    moph_code   TEXT UNIQUE,
-    brand_name  TEXT NOT NULL,
-    ingredients TEXT,
-    strength    TEXT,
-    form        TEXT,
-    pack_size   TEXT,
-    price_lbp   INTEGER
+    id           INTEGER PRIMARY KEY,
+    moph_code    TEXT UNIQUE,
+    brand_name   TEXT NOT NULL,
+    strength     TEXT,
+    presentation TEXT,
+    pack_size    INTEGER,
+    form         TEXT,
+    price_lbp    INTEGER,
+    ingredients  TEXT,
+    drug_class   TEXT
 );
 
 CREATE TABLE IF NOT EXISTS voice_clips (

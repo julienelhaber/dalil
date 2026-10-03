@@ -11,5 +11,7 @@ class Settings:
     WABA_ID = os.getenv("WABA_ID", "")
     APP_ID = os.getenv("APP_ID", "")
     APP_SECRET = os.getenv("APP_SECRET", "")
+    DEMO_RITA_PHONE = os.getenv("DEMO_RITA_PHONE", "")
+    DEMO_GEORGES_PHONE = os.getenv("DEMO_GEORGES_PHONE", "")
 
 settings = Settings()
