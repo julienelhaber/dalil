@@ -13,5 +13,6 @@ class Settings:
     APP_SECRET = os.getenv("APP_SECRET", "")
     DEMO_RITA_PHONE = os.getenv("DEMO_RITA_PHONE", "")
     DEMO_GEORGES_PHONE = os.getenv("DEMO_GEORGES_PHONE", "")
+    LATER_MINUTES = int(os.getenv("LATER_MINUTES", "30"))
 
 settings = Settings()
