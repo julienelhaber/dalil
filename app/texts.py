@@ -71,7 +71,35 @@ TEXTS = {
         "en": "Added {new} to your list. Ask your pharmacist how and when to take it.",
         "ar": "زدت {new} عاللائحة. اسأل الصيدلي كيف وإيمتى لازم تاخدو.",
     },
+    # Consent and help (Step 5)
+    "consent_yes": {
+        "en": "Thanks! I'll remind you when a dose is due, and you can send me a photo of a medicine box to check it. Type STOP at any time to stop everything.",
+        "ar": "شكراً! رح ذكّرك بس يجي وقت الدوا، وفيك تبعتلي صورة علبة دوا لإفحصها. اكتب «وقف» بأي وقت لتوقّف كل شي.",
+    },
+    "stopped": {
+        "en": "I stopped your reminders and alerts. Send me a message any time to start again.",
+        "ar": "وقّفت التذكير والتنبيهات. إذا بدك ترجع، ابعتلي رسالة.",
+    },
+    "menu": {
+        "en": "I'm Dalil. I remind you when a dose is due. Send me a photo of a medicine box to check it. Type STOP to stop everything.",
+        "ar": "أنا دليل. بذكّرك بأدويتك بوقتها. ابعتلي صورة علبة دوا لإفحصها. اكتب «وقف» لتوقّف كل شي.",
+    },
 }
+
+# First message to someone who has not agreed yet: both languages in one message
+CONSENT_PROMPT = (
+    "مرحبا! أنا دليل، بذكّرك بأدويتك عالواتساب. لحتى ذكّرك، بحفظ أدويتك ومواعيدها وأجوبتك، "
+    "وفيني خبّر حدا من عيلتك إنت بتختارو. أنا مش حكيم وما بغيّر أي جرعة. بتوافق؟\n\n"
+    "Hi! I'm Dalil, a medicine reminder on WhatsApp. To remind you, I save your medicines, "
+    "dose times and answers, and I can alert a family member you choose. "
+    "I'm not a doctor and I never change a dose. Do you agree?"
+)
+CONSENT_BUTTONS = [("CONSENT:ar", "نعم، بالعربي"), ("CONSENT:en", "Yes, in English"), ("CONSENT:no", "No / لا")]
+CONSENT_NO = (
+    "ماشي، ما رح ذكّرك وما رح احفظ أدويتك. إذا غيّرت رأيك، ابعتلي رسالة.\n\n"
+    "OK, I won't remind you or save your medicines. If you change your mind, send me a message."
+)
+STOP_WORDS = {"stop", "وقف", "وقّف", "wa2ef", "wa22ef"}
 
 REASON_BUTTONS = {
     "en": [("ran_out", "Ran out"), ("side_effect", "Side effect"), ("cost", "Too expensive")],

@@ -9,7 +9,7 @@ from app.whatsapp import send_template, send_text
 def caregivers(conn, patient_id):
     return conn.execute(
         """SELECT u.* FROM care_links c JOIN users u ON u.id = c.caregiver_id
-           WHERE c.patient_id = ? AND c.alert_on_missed = 1""",
+           WHERE c.patient_id = ? AND c.alert_on_missed = 1 AND u.consent = 1""",
         (patient_id,),
     ).fetchall()
 

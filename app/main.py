@@ -4,9 +4,11 @@ from contextlib import asynccontextmanager  # NEW
 from fastapi import FastAPI, Request, Response, HTTPException
 from app.care import handle_check, handle_reason, handle_typed_reason  # STEP 3
 from app.config import settings
+from app.consent import handle_consent  # STEP 5
 from app.db import init_db, upsert_inbound_user  # NEW
 from app.photo import handle_med_no, handle_med_yes, handle_photo  # STEP 4
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
+from app.texts import TEXTS  # STEP 5
 from app.whatsapp import send_text
 
 
@@ -57,6 +59,8 @@ async def receive(request: Request):
 
 # STEP 2: everything below is new
 async def handle_message(user, msg, is_new):
+    if await handle_consent(user, msg):  # STEP 5: consent and STOP come first
+        return
     kind = msg.get("type")
     if kind == "button":
         if await handle_reply_id(user, msg["button"].get("payload", "")):
@@ -72,9 +76,8 @@ async def handle_message(user, msg, is_new):
         text = msg["text"]["body"]  # STEP 3: a reason typed after Problem comes first
         if await handle_typed_reason(user, text) or await handle_text(user, text):
             return
-    who = user["name"] or "friend"
-    greeting = "Welcome to Dalil" if is_new else "Welcome back"
-    await send_text(msg["from"], f"{greeting}, {who}!")
+    lang = "ar" if user["language"] == "ar" else "en"  # STEP 5: help instead of "Welcome back"
+    await send_text(msg["from"], TEXTS["menu"][lang])
 
 
 async def handle_reply_id(user, reply_id):
