@@ -2,6 +2,7 @@ import asyncio  # STEP 2
 from contextlib import asynccontextmanager  # NEW
 
 from fastapi import FastAPI, Request, Response, HTTPException
+from app.care import handle_check, handle_reason, handle_typed_reason  # STEP 3
 from app.config import settings
 from app.db import init_db, upsert_inbound_user  # NEW
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
@@ -64,7 +65,8 @@ async def handle_message(user, msg, is_new):
         if await handle_reply_id(user, reply_id):
             return
     elif kind == "text":
-        if await handle_text(user, msg["text"]["body"]):
+        text = msg["text"]["body"]  # STEP 3: a reason typed after Problem comes first
+        if await handle_typed_reason(user, text) or await handle_text(user, text):
             return
     who = user["name"] or "friend"
     greeting = "Welcome to Dalil" if is_new else "Welcome back"
@@ -76,6 +78,10 @@ async def handle_reply_id(user, reply_id):
     parts = reply_id.split(":")
     if parts[0] in ("TAKEN", "LATER", "PROBLEM") and len(parts) == 2:
         return await handle_dose_reply(user, parts[0], int(parts[1]))
+    if parts[0] == "REASON" and len(parts) == 3:  # STEP 3
+        return await handle_reason(user, int(parts[1]), parts[2])
+    if parts[0] == "CHECK" and len(parts) == 2:  # STEP 3
+        return await handle_check(user, int(parts[1]))
     return False
 
 
