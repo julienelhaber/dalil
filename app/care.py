@@ -56,12 +56,14 @@ async def alert_family(info, family):
 async def alert_unanswered():
     """No answer long after a reminder: mark the dose missed and tell the family."""
     with get_conn() as conn:
+        # STEP 9: skip patients who typed STOP (2 new lines in the query: JOIN users, u.consent = 1)
         rows = conn.execute(
             """SELECT DISTINCT e.id FROM dose_events e
                JOIN schedules s ON s.id = e.schedule_id
                JOIN medicines m ON m.id = s.medicine_id
+               JOIN users u ON u.id = m.patient_id
                JOIN care_links c ON c.patient_id = m.patient_id
-               WHERE e.status = 'pending' AND c.alert_on_missed = 1
+               WHERE e.status = 'pending' AND c.alert_on_missed = 1 AND u.consent = 1
                  AND datetime(e.due_at, '+' || c.alert_after_minutes || ' minutes')
                      <= datetime('now')
                  AND datetime(e.due_at) >= datetime('now', '-3 hours')"""

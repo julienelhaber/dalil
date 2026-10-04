@@ -87,14 +87,17 @@ async def resend_later():
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=settings.LATER_MINUTES)
     cutoff = cutoff.isoformat(timespec="seconds")
     with get_conn() as conn:
+        # STEP 9: only for patients who still agree (not after STOP)
         rows = conn.execute(
-            "SELECT id FROM dose_events WHERE status = 'later' AND responded_at <= ?",
+            """SELECT e.id FROM dose_events e
+               JOIN schedules s ON s.id = e.schedule_id
+               JOIN medicines m ON m.id = s.medicine_id
+               JOIN users u ON u.id = m.patient_id
+               WHERE e.status = 'later' AND e.responded_at <= ? AND u.consent = 1""",
             (cutoff,),
         ).fetchall()
-        conn.execute(
-            "UPDATE dose_events SET status = 'pending' WHERE status = 'later' AND responded_at <= ?",
-            (cutoff,),
-        )
+        for row in rows:  # STEP 9
+            conn.execute("UPDATE dose_events SET status = 'pending' WHERE id = ?", (row["id"],))
     for row in rows:
         await send_event(row["id"])
 
