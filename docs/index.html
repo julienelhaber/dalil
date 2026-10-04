@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Try Dalil, a WhatsApp medicine companion for older patients in Lebanon, without WhatsApp.">
+<title>Dalil Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a scene rail on top, two phones side by side (stacked on a phone), and the record Dalil keeps underneath. */
+:root {
+  --paper: #f1f4f2;
+  --ink: #14231e;
+  --muted: #5a6a64;
+  --line: #d3ddd8;
+  --accent: #1d7650;
+  --accent-ink: #ffffff;
+  --chat: #e6ece8;
+  --bubble-in: #ffffff;
+  --bubble-out: #d7ece0;
+  --chip: #e2ebe6;
+  --warn: #9a5a0c;
+  --warn-bg: #fbf0df;
+  --stop: #b42318;
+  --stop-bg: #fbe9e7;
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", "Geeza Pro", "Noto Sans Arabic", sans-serif;
+  --font-ar: "IBM Plex Sans Arabic", "IBM Plex Sans", "Geeza Pro", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.75rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1613; --ink: #e2ebe6; --muted: #93a49d; --line: #26332d;
+    --accent: #52b487; --accent-ink: #0b1310; --chat: #121b17; --bubble-in: #1b2621;
+    --bubble-out: #1e3a2c; --chip: #1d2a24; --warn: #e3a95c; --warn-bg: #2b2112;
+    --stop: #f1897d; --stop-bg: #2e1715; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1613; --ink: #e2ebe6; --muted: #93a49d; --line: #26332d;
+  --accent: #52b487; --accent-ink: #0b1310; --chat: #121b17; --bubble-in: #1b2621;
+  --bubble-out: #1e3a2c; --chip: #1d2a24; --warn: #e3a95c; --warn-bg: #2b2112;
+  --stop: #f1897d; --stop-bg: #2e1715; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: var(--step-0); line-height: 1.5; }
+.wrap { max-width: 68rem; margin: 0 auto; padding-inline: 16px; padding-block: 1.5rem 3rem; display: grid; gap: 1.5rem; }
+header.intro { display: grid; gap: 0.6rem; max-width: 46rem; }
+.brand { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.brand h1 { margin: 0; font-size: var(--step-2); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+.brand .ar { font-family: var(--font-ar); font-size: var(--step-2); font-weight: 600; color: var(--accent); }
+.brand .tag { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.lede { margin: 0; font-size: var(--step-1); max-width: 40rem; }
+.note { margin: 0; color: var(--muted); max-width: 44rem; }
+.links { display: flex; gap: 1rem; flex-wrap: wrap; }
+.links a { color: var(--accent); font-weight: 500; }
+
+/* Scene rail */
+.rail { display: grid; gap: 0.75rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-block: 1rem; }
+.tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.tab { font: inherit; font-size: var(--step--1); border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; display: inline-flex; gap: 0.45rem; align-items: baseline; }
+.tab .when { font-family: var(--font-mono); color: var(--muted); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tab[aria-selected="true"] .when { color: inherit; opacity: 0.75; }
+.scene { display: flex; gap: 1rem 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.scene p { margin: 0; max-width: 40rem; min-width: 0; flex: 1 1 22rem; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.act { font: inherit; font-weight: 500; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); border-radius: 0.5rem; padding: 0.5rem 0.9rem; cursor: pointer; }
+.act.secondary { background: transparent; color: var(--accent); }
+.act:disabled { opacity: 0.45; cursor: not-allowed; }
+.restart { font: inherit; font-size: var(--step--1); background: none; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 0.25rem; }
+
+/* Phones */
+.phones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+@media (max-width: 760px) { .phones { grid-template-columns: minmax(0, 1fr); } }
+.phone { border: 1px solid var(--line); border-radius: 1.25rem; overflow: hidden; background: var(--chat); display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.phone-head { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--bubble-in); border-bottom: 1px solid var(--line); }
+.avatar { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; background: var(--chip); font-weight: 600; flex: none; }
+.who { display: grid; min-width: 0; flex: 1; }
+.who b { font-weight: 600; }
+.who span { font-size: var(--step--1); color: var(--muted); }
+.lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: none; }
+.lang button { font: inherit; font-size: var(--step--1); border: none; background: transparent; color: var(--muted); padding: 0.2rem 0.65rem; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.lang button:first-child { font-family: var(--font-ar); }
+.chat { height: 32rem; overflow-y: auto; padding: 1rem 0.85rem; display: flex; flex-direction: column; gap: 0.6rem; scroll-behavior: smooth; }
+@media (max-width: 760px) { .chat { height: 26rem; } .chat:has(> .empty) { height: 8rem; } }
+.empty { margin: auto; color: var(--muted); font-size: var(--step--1); text-align: center; max-width: 16rem; }
+.sep { align-self: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); background: var(--chip); border-radius: 999px; padding: 0.15rem 0.65rem; }
+.msg { max-width: 86%; display: grid; gap: 0; animation: rise 0.18s ease-out; }
+.msg.in { align-self: flex-start; }
+.msg.out { align-self: flex-end; }
+.bubble { border-radius: 0.9rem; padding: 0.55rem 0.75rem 0.4rem; background: var(--bubble-in); border: 1px solid var(--line); display: grid; gap: 0.35rem; min-width: 0; }
+.msg.out .bubble { background: var(--bubble-out); border-color: transparent; }
+.msg.in .bubble { border-top-left-radius: 0.25rem; }
+.msg.out .bubble { border-top-right-radius: 0.25rem; }
+.bubble p { margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.bubble p[dir="rtl"] { font-family: var(--font-ar); }
+.label { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.time { justify-self: end; font-family: var(--font-mono); font-size: 0.6875rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bubble.warn { background: var(--warn-bg); border-color: var(--warn); }
+.bubble.warn .label { color: var(--warn); }
+.btns { display: grid; gap: 0.3rem; margin-top: 0.3rem; }
+.qr { font: inherit; font-weight: 500; border: 1px solid var(--line); background: var(--bubble-in); color: var(--accent); border-radius: 0.6rem; padding: 0.45rem 0.6rem; cursor: pointer; text-align: center; }
+.qr:hover:not(:disabled) { border-color: var(--accent); }
+.qr:disabled { cursor: default; opacity: 0.5; }
+.qr.chosen { opacity: 1; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.qr span[dir="rtl"] { font-family: var(--font-ar); }
+.photo { width: 12.5rem; max-width: 100%; aspect-ratio: 4 / 3; border-radius: 0.6rem; display: grid; place-items: center; overflow: hidden; }
+.photo.box { background: linear-gradient(160deg, #8fa39a, #5f7369); }
+.photo.table { background: radial-gradient(circle at 35% 40%, #d9c7a8 0 18%, transparent 19%), linear-gradient(160deg, #a58a63, #6d5a40); }
+.carton { width: 70%; aspect-ratio: 16 / 10; background: #fbfbf8; border-radius: 0.2rem; box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.25); transform: rotate(-4deg); display: grid; align-content: center; gap: 0.1rem; padding: 0.5rem 0.6rem; color: #1b2b44; border-left: 0.45rem solid #2b5fa8; }
+.carton b { font-size: 1rem; letter-spacing: 0.04em; }
+.carton i { font-style: normal; font-size: 0.75rem; }
+.mug { color: #f4efe6; font-family: var(--font-mono); font-size: 0.6875rem; align-self: end; padding: 0.4rem; }
+
+/* What Dalil saved */
+.ledger { display: grid; gap: 0.6rem; }
+.ledger h2 { margin: 0; font-size: var(--step-1); font-weight: 600; }
+.ledger p { margin: 0; color: var(--muted); max-width: 44rem; }
+.rows { margin: 0; padding: 0.75rem 1rem; list-style: none; border: 1px solid var(--line); border-radius: 0.75rem; font-family: var(--font-mono); font-size: var(--step--1); display: grid; gap: 0.35rem; min-height: 3rem; overflow-x: auto; }
+.rows li { display: grid; grid-template-columns: 5.5rem 1fr; gap: 0.75rem; font-variant-numeric: tabular-nums; min-width: 28rem; }
+.rows li .t { color: var(--muted); }
+.rows li.none { display: block; min-width: 0; color: var(--muted); font-family: var(--font-sans); }
+footer.facts { display: grid; gap: 0.4rem; color: var(--muted); font-size: var(--step--1); border-top: 1px solid var(--line); padding-top: 1rem; }
+footer.facts p { margin: 0; max-width: 52rem; }
+
+.ping { position: fixed; left: 50%; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); font: inherit; font-weight: 500; background: var(--ink); color: var(--paper); border: none; border-radius: 999px; padding: 0.55rem 1rem; cursor: pointer; box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.25); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .msg { animation: none; } .chat { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="intro">
+    <div class="brand"><h1>Dalil</h1><span class="ar" lang="ar">دليل</span><span class="tag">Walkthrough</span></div>
+    <p class="lede">A WhatsApp medicine companion for older patients in Lebanon, and for the family that looks after them from abroad.</p>
+    <p class="note">This page replays Dalil's real messages, copied from its code, so you can try the flow without WhatsApp. The live bot runs on the WhatsApp Cloud API test number, which can only message approved phones. In the photo step, the page shows the result the box reader gives on our Flumivir photo instead of reading a new one.</p>
+    <div class="links" id="links"></div>
+  </header>
+
+  <section class="rail" aria-label="Scenes">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="scene">
+      <p id="scene-text"></p>
+      <div class="actions" id="actions"></div>
+    </div>
+    <div><button class="restart" id="restart" type="button">Start over</button></div>
+  </section>
+
+  <section class="phones">
+    <article class="phone" id="phone-g" aria-label="Georges's phone">
+      <div class="phone-head">
+        <div class="avatar" aria-hidden="true">G</div>
+        <div class="who"><b>Georges, 68</b><span>Patient in Beirut · sees Dalil in <span id="g-lang-name">Arabic</span></span></div>
+        <div class="lang" role="group" aria-label="Georges's language">
+          <button type="button" id="lang-ar" aria-pressed="true" lang="ar">عربي</button>
+          <button type="button" id="lang-en" aria-pressed="false">English</button>
+        </div>
+      </div>
+      <div class="chat" id="chat-g" aria-live="polite"></div>
+    </article>
+    <article class="phone" id="phone-r" aria-label="Rita's phone">
+      <div class="phone-head">
+        <div class="avatar" aria-hidden="true">R</div>
+        <div class="who"><b>Rita</b><span>His daughter, lives abroad · sees Dalil in English</span></div>
+      </div>
+      <div class="chat" id="chat-r" aria-live="polite"></div>
+    </article>
+  </section>
+
+  <section class="ledger" aria-labelledby="ledger-title">
+    <h2 id="ledger-title">What Dalil saved</h2>
+    <p>Each step writes to Dalil's SQLite database on the laptop. These lines show what changed.</p>
+    <ul class="rows" id="rows"></ul>
+  </section>
+
+  <footer class="facts">
+    <p>Box reader: RapidOCR (16 MB, PP-OCRv4 models) on a laptop CPU, then fuzzy matching against the 5,762 drugs on the Lebanese Ministry of Public Health price list. On our test set it got 6 of 6 photos right, about half a second each, with Wi-Fi off.</p>
+    <p>Dalil never changes a dose. It asks for consent first, the patient confirms every box, and when it is not sure it says so and points to the pharmacist. Georges and Rita are fictional; the medicines and prices are real entries from the official list.</p>
+  </footer>
+</div>
+<button class="ping" id="ping" type="button" hidden></button>
+
+<script>
+(function () {
+  // Set these two after publishing the repo and the video.
+  const REPO_URL = "https://github.com/julienelhaber/dalil";
+  const VIDEO_URL = "";
+
+  const LATER_MINUTES = 30;
+  const ALERT_AFTER_MINUTES = 60;
+
+  // Copied from app/texts.py
+  const T = {
+    taken: { en: "Logged: you took {medicine}. Thank you!", ar: "تمام، سجّلت إنك أخدت {medicine}. الله يعطيك الصحة." },
+    later: { en: "OK, I'll remind you again in {minutes} minutes.", ar: "ماشي، رح ذكّرك مرة تانية بعد {minutes} دقيقة." },
+    problem: { en: "What's the problem with {medicine}? If it's something else, type it.", ar: "شو المشكلة مع {medicine}؟ إذا في شي تاني، اكتبلي ياه." },
+    thanks: { en: "Thanks for telling me. I let {names} know.", ar: "شكراً إنك خبّرتني. بلّغت {names}." },
+    side_effect: { en: "Don't stop or change {medicine} on your own: ask your doctor or pharmacist. If you feel very unwell, get medical help now.", ar: "ما توقّف ولا تغيّر {medicine} لحالك، اسأل الحكيم أو الصيدلي. إذا حاسس حالك كتير تعبان، اطلب مساعدة طبية هلّق." },
+    details: { en: "{patient}'s answer: {reason}. Medicine: {medicine}, due at {time}. A call from you would help.", ar: "جواب {patient}: {reason}. الدوا: {medicine}، موعدو الساعة {time}. اتصال منك بيساعد." },
+    no_answer: { en: "{patient} did not answer the reminder for {medicine} at {time}. A call from you would help.", ar: "{patient} ما جاوب على تذكير {medicine} الساعة {time}. اتصال منك بيساعد." },
+    checking: { en: "Message from {name}: \"I'll check on you.\"", ar: "رسالة من {name}: «رح إتطمّن عليك»." },
+    not_sure: { en: "I'm not sure which medicine this is. Send a clearer photo of the front of the box, or ask your pharmacist.", ar: "مش متأكد شو هيدا الدوا. بعتلي صورة أوضح لقدّام العلبة، أو اسأل الصيدلي." },
+    confirm: { en: "Is this {name}, box of {pack}?", ar: "هيدا {name}، علبة {pack}؟" },
+    price: { en: "MoPH price: {price} LL", ar: "سعر وزارة الصحة: {price} ل.ل." },
+    declined: { en: "OK, I didn't save it. Send a clearer photo, or ask your pharmacist.", ar: "ماشي، ما سجّلتو. بعتلي صورة أوضح، أو اسأل الصيدلي." },
+    same: { en: "Careful: {new} and {old} are the same medicine ({shared}) under two names. Taking both would double the dose. Don't take {new} before you ask your doctor or pharmacist.", ar: "انتبه: {new} و{old} هني نفس الدوا ({shared}) بس باسمين مختلفين. إذا أخدت التنين، بتصير الجرعة دبل. ما تاخد {new} قبل ما تسأل الحكيم أو الصيدلي." },
+    same_family: { en: "Heads-up: {patient} sent a photo of {new}. It is the same medicine ({shared}) as {old}, which {patient} already takes. Taking both would double the dose. Please check with the doctor or pharmacist.", ar: "تنبيه: {patient} بعت صورة {new}. هيدا نفس الدوا ({shared}) متل {old} اللي عم ياخدو. إذا أخد التنين، بتصير الجرعة دبل. تأكّد مع الحكيم أو الصيدلي." },
+    consent_yes: { en: "Thanks! I'll remind you when a dose is due, and you can send me a photo of a medicine box to check it. Type STOP at any time to stop everything.", ar: "شكراً! رح ذكّرك بس يجي وقت الدوا، وفيك تبعتلي صورة علبة دوا لإفحصها. اكتب «وقف» بأي وقت لتوقّف كل شي." },
+    stopped: { en: "I stopped your reminders and alerts. Send me a message any time to start again.", ar: "وقّفت التذكير والتنبيهات. إذا بدك ترجع، ابعتلي رسالة." },
+    hello: { en: "Hi", ar: "مرحبا" },
+    stop_word: { en: "STOP", ar: "وقف" }
+  };
+  const CONSENT_PROMPT = [
+    "مرحبا! أنا دليل، بذكّرك بأدويتك عالواتساب. لحتى ذكّرك، بحفظ أدويتك ومواعيدها وأجوبتك، وفيني خبّر حدا من عيلتك إنت بتختارو. أنا مش حكيم وما بغيّر أي جرعة. بتوافق؟",
+    "Hi! I'm Dalil, a medicine reminder on WhatsApp. To remind you, I save your medicines, dose times and answers, and I can alert a family member you choose. I'm not a doctor and I never change a dose. Do you agree?"
+  ];
+  const CONSENT_BUTTONS = [["ar", "نعم، بالعربي"], ["en", "Yes, in English"], ["no", "No / لا"]];
+  const CONSENT_NO = [
+    "ماشي، ما رح ذكّرك وما رح احفظ أدويتك. إذا غيّرت رأيك، ابعتلي رسالة.",
+    "OK, I won't remind you or save your medicines. If you change your mind, send me a message."
+  ];
+  const REASONS = {
+    en: [["ran_out", "Ran out"], ["side_effect", "Side effect"], ["cost", "Too expensive"]],
+    ar: [["ran_out", "خلص الدوا"], ["side_effect", "عوارض جانبية"], ["cost", "غالي كتير"]]
+  };
+  const YES_NO = { en: ["Yes", "No"], ar: ["إيه", "لا"] };
+  const UNIT = { en: "pill", ar: "حبة" };
+
+  // The WhatsApp templates as Meta approved them on Oct 2 ({{name}} written here as {name}).
+  const TEMPLATES = {
+    dose_reminder: {
+      en: "Hello {patient_name}, it is time to take your medicine {medicine}. Dose: {dose}. Please tap a button below to reply.",
+      ar: "مرحباً {patient_name}، حان وقت دواء {medicine}. الجرعة: {dose}. يرجى الضغط على أحد الأزرار أدناه للرد."
+    },
+    caregiver_alert: {
+      en: "Hello {caregiver_name}. We have not received a confirmation from {patient_name} for {medicine}, which was due at {due_time}. You may want to check on them.",
+      ar: "مرحباً {caregiver_name}، لم يصلنا تأكيد من {patient_name} بأخذ دواء {medicine} الذي كان موعده الساعة {due_time}. ننصح بالتواصل للاطمئنان."
+    }
+  };
+  const DOSE_BUTTONS = { en: ["Taken", "Later", "Problem"], ar: ["أخذته", "لاحقاً", "لدي مشكلة"] };
+  const ALERT_BUTTON = { en: "I'll check", ar: "سأتواصل" };
+
+  const MEDS = {
+    gastrimut: { name: "Gastrimut 20mg", pills: 28, time: "08:00" },
+    amlor: { name: "Amlor 5mg", pills: 30, time: "20:00" }
+  };
+  const FLUMIVIR = { name: "Flumivir 75mg", code: "5449", pack: "10", price: "1,384,158", shared: "oseltamivir", old: "Tamiflu 75mg" };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (s, p) => s.replace(/\{(\w+)\}/g, (m, k) => (k in p ? p[k] : m));
+
+  let state;
+  function fresh() {
+    return {
+      lang: "ar", day: 1, clock: 0, events: [], nextId: 1, scene: 0, marked: { g: 0, r: 0 },
+      chats: { g: [], r: [] }, rows: [], pills: { gastrimut: 28, amlor: 30 },
+      consent: true, quietWhy: "", queue: Promise.resolve()
+    };
+  }
+
+  // ---- clock ----
+  const hhmm = (m) => String(Math.floor(m / 60) % 24).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+  // Time only moves forward. A reminder can't be sent twice for the same day and time
+  // (UNIQUE(schedule_id, due_at)), so replaying a dose scene moves to the next day.
+  // A soft scene (hello, photo) just moves on a couple of minutes instead.
+  function setTime(day, time, soft) {
+    const [h, m] = time.split(":").map(Number);
+    const mins = h * 60 + m;
+    const current = state.day * 1440 + state.clock;
+    if (day * 1440 + mins > current) { state.day = day; state.clock = mins; return; }
+    if (soft) { tick(2); return; }
+    let d = state.day;
+    while (d * 1440 + mins <= current) d++;
+    state.day = d; state.clock = mins;
+  }
+  const tick = (min = 1) => { state.clock += min; return hhmm(state.clock); };
+  const now = () => hhmm(state.clock);
+
+  // ---- rendering ----
+  function langOf(phone) { return phone === "g" ? state.lang : "en"; }
+  function addMsg(phone, msg) {
+    state.chats[phone].push(msg);
+    renderChat(phone);
+    nudge(phone);
+  }
+  function separator(phone, text) { addMsg(phone, { kind: "sep", text }); }
+  function dayMark(phone) {
+    if (state.marked[phone] === state.day) return;
+    state.marked[phone] = state.day;
+    separator(phone, "Day " + state.day);
+  }
+  function dalil(phone, spec) { addMsg(phone, Object.assign({ kind: "in", time: now() }, spec)); }
+  function said(phone, textFn, extra) { addMsg(phone, Object.assign({ kind: "out", time: now(), text: textFn }, extra || {})); }
+  function log(text) {
+    state.rows.push({ t: "Day " + state.day + " " + now(), text });
+    renderRows();
+  }
+
+  function para(text) {
+    const p = document.createElement("p");
+    p.textContent = text;
+    p.dir = /[؀-ۿ]/.test(text.trim().charAt(0)) || /^[\s\d.,:()«»"]*[؀-ۿ]/.test(text) ? "rtl" : "ltr";
+    if (p.dir === "rtl") p.lang = "ar";
+    return p;
+  }
+
+  function renderChat(phone) {
+    const box = $("chat-" + phone);
+    const lang = langOf(phone);
+    box.textContent = "";
+    const msgs = state.chats[phone];
+    if (!msgs.length) {
+      const e = document.createElement("p");
+      e.className = "empty";
+      e.textContent = phone === "g" ? "Pick a scene above to start. Then tap the buttons inside the messages, as Georges would." : "Rita's phone lights up when Dalil needs her.";
+      box.appendChild(e);
+      return;
+    }
+    msgs.forEach((m) => {
+      if (m.kind === "sep") {
+        const s = document.createElement("div");
+        s.className = "sep"; s.textContent = m.text;
+        box.appendChild(s); return;
+      }
+      const wrap = document.createElement("div");
+      wrap.className = "msg " + (m.kind === "in" ? "in" : "out");
+      const b = document.createElement("div");
+      b.className = "bubble" + (m.tone === "warn" ? " warn" : "");
+      if (m.label) {
+        const l = document.createElement("span");
+        l.className = "label"; l.textContent = typeof m.label === "function" ? m.label(lang) : m.label;
+        b.appendChild(l);
+      }
+      if (m.photo) b.appendChild(photo(m.photo));
+      const text = typeof m.text === "function" ? m.text(lang) : m.text;
+      if (text) [].concat(text).forEach((t) => t && b.appendChild(para(t)));
+      const t = document.createElement("span");
+      t.className = "time"; t.textContent = m.time;
+      b.appendChild(t);
+      wrap.appendChild(b);
+      if (m.buttons) {
+        const g = document.createElement("div");
+        g.className = "btns";
+        m.buttons(lang).forEach(([key, label]) => {
+          const btn = document.createElement("button");
+          btn.type = "button"; btn.className = "qr" + (m.chosen === key ? " chosen" : "");
+          const span = document.createElement("span");
+          span.textContent = label;
+          if (/[؀-ۿ]/.test(label) && !/[A-Za-z]/.test(label)) { span.dir = "rtl"; span.lang = "ar"; }
+          btn.appendChild(span);
+          btn.disabled = !!m.chosen || state.busy;
+          btn.addEventListener("click", () => {
+            if (m.chosen || state.busy) return;
+            m.chosen = key;
+            run(() => m.onTap(key, label));
+          });
+          g.appendChild(btn);
+        });
+        wrap.appendChild(g);
+      }
+      box.appendChild(wrap);
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function photo(kind) {
+    const d = document.createElement("div");
+    d.className = "photo " + (kind === "flumivir" ? "box" : "table");
+    d.setAttribute("role", "img");
+    if (kind === "flumivir") {
+      d.setAttribute("aria-label", "Photo of a Flumivir 75 mg box");
+      const c = document.createElement("div");
+      c.className = "carton";
+      c.innerHTML = "<b>FLUMIVIR</b><i>Oseltamivir 75 mg</i><i>10 capsules</i>";
+      d.appendChild(c);
+    } else {
+      d.setAttribute("aria-label", "Photo of a coffee cup on a table, no medicine box");
+      const s = document.createElement("span");
+      s.className = "mug"; s.textContent = "a cup on the kitchen table";
+      d.appendChild(s);
+    }
+    return d;
+  }
+
+  function renderRows() {
+    const ul = $("rows");
+    ul.textContent = "";
+    if (!state.rows.length) {
+      const li = document.createElement("li");
+      li.className = "none"; li.textContent = "Nothing yet. Dalil writes here as the scenes play.";
+      ul.appendChild(li); return;
+    }
+    state.rows.forEach((r) => {
+      const li = document.createElement("li");
+      const t = document.createElement("span"); t.className = "t"; t.textContent = r.t;
+      const x = document.createElement("span"); x.textContent = r.text;
+      li.append(t, x); ul.appendChild(li);
+    });
+    ul.scrollTop = ul.scrollHeight;
+  }
+
+  // ---- pacing: messages arrive one after another ----
+  const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+  function run(fn) {
+    state.busy = true; renderAll(); updateActions();
+    state.queue = state.queue.then(fn).catch((e) => console.error(e)).then(() => {
+      state.busy = false; renderAll(); updateActions();
+    });
+    return state.queue;
+  }
+
+  // ---- the flows ----
+  function lastPending(medKey) {
+    for (let i = state.events.length - 1; i >= 0; i--) {
+      const e = state.events[i];
+      if (e.status === "pending" && e.medKey === medKey) return e;
+    }
+    return null;
+  }
+
+  // As in app/consent.py: with consent 0, anything Georges sends gets the consent question again.
+  function askConsent() {
+    dalil("g", { text: CONSENT_PROMPT, buttons: () => CONSENT_BUTTONS, onTap: (choice) => consentReply(choice) });
+  }
+  function blocked(what) {
+    if (state.consent) return false;
+    askConsent();
+    log(what + " · consent 0 · not handled · consent question sent again");
+    return true;
+  }
+
+  async function sendReminder(medKey, resend) {
+    const med = MEDS[medKey];
+    if (!state.consent) {
+      separator("g", now() + " · no reminder: " + state.quietWhy);
+      log("scheduler · Georges has consent 0 · " + med.name + " not sent");
+      return;
+    }
+    let ev = resend;
+    if (!ev) {
+      ev = { id: state.nextId++, medKey, med, status: "pending", reason: null, replyText: null, due: med.time, day: state.day };
+      state.events.push(ev);
+      log("dose " + ev.id + " · " + med.name + " · reminder sent · pending");
+    } else {
+      ev.status = "pending";
+      log("dose " + ev.id + " · " + med.name + " · sent again · pending");
+    }
+    await pause(350);
+    dalil("g", {
+      label: (L) => "Template dose_reminder (" + L + ")",
+      text: (L) => fmt(TEMPLATES.dose_reminder[L], { patient_name: "Georges", medicine: med.name, dose: "1 " + UNIT[L] }),
+      buttons: (L) => DOSE_BUTTONS[L].map((b, i) => [["TAKEN", "LATER", "PROBLEM"][i], b]),
+      onTap: (key) => doseReply(ev, key)
+    });
+  }
+
+  async function doseReply(ev, key) {
+    const idx = ["TAKEN", "LATER", "PROBLEM"].indexOf(key);
+    tick();
+    said("g", (L) => DOSE_BUTTONS[L][idx]);
+    await pause(450);
+    if (blocked("dose " + ev.id + " reply")) return;
+    const med = ev.med;
+    if (key === "TAKEN") {
+      const before = state.pills[ev.medKey];
+      if (ev.status !== "taken") state.pills[ev.medKey] = before - 1;
+      ev.status = "taken";
+      dalil("g", { text: (L) => fmt(T.taken[L], { medicine: med.name }) });
+      log("dose " + ev.id + " · taken · pills left " + before + " → " + state.pills[ev.medKey]);
+    } else if (key === "LATER") {
+      ev.status = "later";
+      dalil("g", { text: (L) => fmt(T.later[L], { minutes: LATER_MINUTES }) });
+      log("dose " + ev.id + " · later · send again in " + LATER_MINUTES + " min");
+      await pause(700);
+      tick(LATER_MINUTES - 1);
+      separator("g", LATER_MINUTES + " minutes later · " + now());
+      await sendReminder(ev.medKey, ev);
+    } else {
+      ev.status = "missed";
+      log("dose " + ev.id + " · missed · asking why");
+      dalil("g", {
+        text: (L) => fmt(T.problem[L], { medicine: med.name }),
+        buttons: (L) => REASONS[L],
+        onTap: (reason) => giveReason(ev, reason)
+      });
+    }
+  }
+
+  async function giveReason(ev, reason) {
+    tick();
+    said("g", (L) => REASONS[L].find((r) => r[0] === reason)[1]);
+    await pause(450);
+    if (blocked("dose " + ev.id + " reason")) return;
+    ev.reason = reason;
+    dalil("g", {
+      text: (L) => {
+        const out = [fmt(T.thanks[L], { names: "Rita" })];
+        if (reason === "side_effect") out.push(fmt(T.side_effect[L], { medicine: ev.med.name }));
+        return out;
+      }
+    });
+    log("dose " + ev.id + " · reason " + reason + " · alerting Rita");
+    await pause(600);
+    alertRita(ev);
+  }
+
+  function alertRita(ev) {
+    dayMark("r");
+    dalil("r", {
+      label: "Template caregiver_alert (en)",
+      text: fmt(TEMPLATES.caregiver_alert.en, { caregiver_name: "Rita", patient_name: "Georges", medicine: ev.med.name, due_time: ev.due }),
+      buttons: () => [["CHECK", ALERT_BUTTON.en]],
+      onTap: () => ritaChecks(ev)
+    });
+  }
+
+  async function ritaChecks(ev) {
+    tick();
+    said("r", () => ALERT_BUTTON.en);
+    await pause(450);
+    let text;
+    if (ev.reason === null) {
+      text = fmt(T.no_answer.en, { patient: "Georges", medicine: ev.med.name, time: ev.due });
+    } else {
+      const reason = REASONS.en.find((r) => r[0] === ev.reason)[1];
+      text = fmt(T.details.en, { patient: "Georges", reason, medicine: ev.med.name, time: ev.due });
+    }
+    dalil("r", { text });
+    await pause(450);
+    dalil("g", { text: (L) => fmt(T.checking[L], { name: "Rita" }) });
+    log("dose " + ev.id + " · Rita tapped I'll check · Georges told");
+  }
+
+  async function letItRing(medKey) {
+    const ev = lastPending(medKey);
+    if (!ev) return;
+    const [h, m] = ev.due.split(":").map(Number);
+    state.clock = Math.max(state.clock, h * 60 + m + ALERT_AFTER_MINUTES);
+    separator("g", "No answer for " + ALERT_AFTER_MINUTES + " minutes · " + now());
+    ev.status = "missed";
+    log("dose " + ev.id + " · no answer after " + ALERT_AFTER_MINUTES + " min · missed · alerting Rita");
+    await pause(500);
+    alertRita(ev);
+  }
+
+  async function startConsent() {
+    setTime(1, "18:00", true);
+    state.consent = false;
+    state.quietWhy = "Georges has not answered the consent question";
+    separator("g", "Day " + state.day + " · " + now());
+    said("g", (L) => T.hello[L]);
+    log("user Georges · first message · consent not given yet");
+    await pause(450);
+    dalil("g", {
+      text: CONSENT_PROMPT,
+      buttons: () => CONSENT_BUTTONS,
+      onTap: (choice) => consentReply(choice)
+    });
+  }
+
+  async function consentReply(choice) {
+    tick();
+    said("g", CONSENT_BUTTONS.find((b) => b[0] === choice)[1]);
+    await pause(450);
+    if (choice === "no") {
+      state.consent = false;
+      state.quietWhy = "Georges said no";
+      dalil("g", { text: CONSENT_NO });
+      log("user Georges · said no · nothing saved, no reminders");
+      return;
+    }
+    state.consent = true;
+    setLang(choice);
+    dalil("g", { text: (L) => T.consent_yes[L] });
+    log("user Georges · consent 0 → 1 · language " + choice);
+  }
+
+  async function typeStop() {
+    tick();
+    said("g", (L) => T.stop_word[L]);
+    await pause(450);
+    const was = state.consent;
+    state.consent = false;
+    state.quietWhy = "Georges typed STOP";
+    dalil("g", { text: (L) => T.stopped[L] });
+    log("user Georges · STOP · consent " + (was ? "1 → 0" : "stays 0") + " · no reminders or alerts");
+  }
+
+  async function sendPhoto(kind) {
+    setTime(3, "10:30", true);
+    separator("g", "Day " + state.day + " · " + now());
+    said("g", "", { photo: kind });
+    await pause(700);
+    tick();
+    if (blocked("photo")) return;
+    if (kind !== "flumivir") {
+      dalil("g", { text: (L) => T.not_sure[L] });
+      log("photo · best brand match below 80 · not sure, nothing saved");
+      return;
+    }
+    log("photo · read FLUMIVIR 75mg, 10 · MoPH code " + FLUMIVIR.code);
+    dalil("g", {
+      text: (L) => [fmt(T.confirm[L], { name: FLUMIVIR.name, pack: FLUMIVIR.pack }), fmt(T.price[L], { price: FLUMIVIR.price })],
+      buttons: (L) => [["YES", YES_NO[L][0]], ["NO", YES_NO[L][1]]],
+      onTap: (key) => confirmBox(key)
+    });
+  }
+
+  async function confirmBox(key) {
+    tick();
+    said("g", (L) => YES_NO[L][key === "YES" ? 0 : 1]);
+    await pause(500);
+    if (blocked("box answer")) return;
+    if (key === "NO") {
+      dalil("g", { text: (L) => T.declined[L] });
+      log("photo · Georges said no · nothing saved");
+      return;
+    }
+    const args = { new: FLUMIVIR.name, old: FLUMIVIR.old, shared: FLUMIVIR.shared, patient: "Georges" };
+    dalil("g", { tone: "warn", label: "Double dose warning", text: (L) => fmt(T.same[L], args) });
+    log("photo · same ingredient as " + FLUMIVIR.old + ": " + FLUMIVIR.shared + " · not added");
+    await pause(600);
+    dayMark("r");
+    dalil("r", { tone: "warn", label: "Double dose warning", text: fmt(T.same_family.en, args) });
+    log("Rita told about the double dose");
+  }
+
+  // ---- scenes ----
+  const SCENES = [
+    {
+      tab: "First message", when: "Day 1",
+      text: "Georges writes to Dalil for the first time. Dalil explains what it saves and asks for consent before anything else. If he says no or types STOP, the other scenes show Dalil staying quiet.",
+      actions: [
+        { label: "Georges says hello", run: startConsent },
+        { label: "Georges types STOP", run: typeStop, secondary: true }
+      ]
+    },
+    {
+      tab: "Morning dose", when: "08:00",
+      text: "The scheduler sends the stomach medicine reminder. Tap Taken, Later or Problem on Georges's phone, or let it ring with no answer.",
+      enter: () => { setTime(2, MEDS.gastrimut.time); separator("g", "Day " + state.day + " · " + now()); },
+      actions: [
+        { label: "Send the 08:00 reminder", run: () => sendReminder("gastrimut") },
+        { label: "Let it ring for 60 minutes", run: () => letItRing("gastrimut"), secondary: true, pendingFor: "gastrimut" }
+      ]
+    },
+    {
+      tab: "Evening dose", when: "20:00",
+      text: "In the demo story Georges ran out of his blood pressure medicine. Tap Problem, then a reason, then I'll check on Rita's phone.",
+      enter: () => { setTime(2, MEDS.amlor.time); separator("g", "Day " + state.day + " · " + now()); },
+      actions: [
+        { label: "Send the 20:00 reminder", run: () => sendReminder("amlor") },
+        { label: "Let it ring for 60 minutes", run: () => letItRing("amlor"), secondary: true, pendingFor: "amlor" }
+      ]
+    },
+    {
+      tab: "New box", when: "Day 3",
+      text: "His GP prescribes Flumivir. The ER already gave him Tamiflu for the flu, which is the same medicine. Georges sends Dalil a photo of the new box.",
+      actions: [
+        { label: "Send the Flumivir photo", run: () => sendPhoto("flumivir") },
+        { label: "Send a photo with no box", run: () => sendPhoto("nobox"), secondary: true }
+      ]
+    }
+  ];
+
+  function renderTabs() {
+    const tabs = $("tabs");
+    tabs.textContent = "";
+    SCENES.forEach((s, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "tab"; b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(i === state.scene));
+      b.id = "tab-" + i;
+      const w = document.createElement("span"); w.className = "when"; w.textContent = s.when;
+      const n = document.createElement("span"); n.textContent = s.tab;
+      b.append(w, n);
+      b.addEventListener("click", () => { if (state.busy) return; state.scene = i; renderTabs(); updateActions(); });
+      tabs.appendChild(b);
+    });
+    $("scene-text").textContent = SCENES[state.scene].text;
+  }
+
+  function updateActions() {
+    const box = $("actions");
+    box.textContent = "";
+    SCENES[state.scene].actions.forEach((a, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.id = "act-" + state.scene + "-" + i;
+      b.className = "act" + (a.secondary ? " secondary" : "");
+      b.textContent = a.label;
+      b.disabled = state.busy || (a.pendingFor && !lastPending(a.pendingFor));
+      b.addEventListener("click", () => {
+        const scene = SCENES[state.scene];
+        run(async () => {
+          if (scene.enter && !a.pendingFor) scene.enter();
+          await a.run();
+        });
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function renderAll() { renderChat("g"); renderChat("r"); }
+
+  function setLang(lang) {
+    state.lang = lang;
+    $("lang-ar").setAttribute("aria-pressed", String(lang === "ar"));
+    $("lang-en").setAttribute("aria-pressed", String(lang === "en"));
+    $("g-lang-name").textContent = lang === "ar" ? "Arabic" : "English";
+    renderChat("g");
+  }
+
+  // ---- "new message on the other phone" chip, for phone-width screens ----
+  const visible = { g: true, r: true };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { visible[e.target.id === "phone-g" ? "g" : "r"] = e.intersectionRatio > 0.35; });
+      if (pingFor && visible[pingFor]) hidePing();
+    }, { threshold: [0, 0.35, 0.6, 1] });
+    io.observe($("phone-g")); io.observe($("phone-r"));
+  }
+  let pingFor = null;
+  function nudge(phone) {
+    if (visible[phone]) return;
+    pingFor = phone;
+    const p = $("ping");
+    p.textContent = phone === "r" ? "New message on Rita's phone" : "New message on Georges's phone";
+    p.hidden = false;
+  }
+  function hidePing() { pingFor = null; $("ping").hidden = true; }
+  $("ping").addEventListener("click", () => {
+    if (pingFor) $("phone-" + pingFor).scrollIntoView({ behavior: "smooth", block: "center" });
+    hidePing();
+  });
+
+  // ---- start ----
+  function links() {
+    const box = $("links");
+    box.textContent = "";
+    [[REPO_URL, "Code on GitHub"], [VIDEO_URL, "Watch the demo video"]].forEach(([href, text]) => {
+      if (!href) return;
+      const a = document.createElement("a");
+      a.href = href; a.textContent = text; a.target = "_blank"; a.rel = "noopener";
+      box.appendChild(a);
+    });
+    box.hidden = !box.children.length;
+  }
+  function start() {
+    state = fresh();
+    hidePing();
+    setLang("ar");
+    renderTabs(); updateActions(); renderAll(); renderRows();
+  }
+  $("lang-ar").addEventListener("click", () => setLang("ar"));
+  $("lang-en").addEventListener("click", () => setLang("en"));
+  $("restart").addEventListener("click", () => { if (!state.busy) start(); });
+  links();
+  start();
+})();
+</script>
+</body>
+</html>
