@@ -4,4 +4,6 @@ __pycache__/
 *.db
 .idea/
 .DS_Store
-data/
+data/*
+!data/ingredients_demo.csv
+!data/boxes/

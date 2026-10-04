@@ -1,0 +1,35 @@
+brand_name,ingredients,drug_class
+AMLOR,amlodipine,calcium channel blocker
+AMLORINE 5,amlodipine,calcium channel blocker
+AMLORINE 10,amlodipine,calcium channel blocker
+CONCOR,bisoprolol,beta blocker
+CONCOR AM 2.5,bisoprolol;amlodipine,beta blocker;calcium channel blocker
+CONCOR AM 5,bisoprolol;amlodipine,beta blocker;calcium channel blocker
+GLUCOPHAGE,metformin,biguanide
+GLUCOPHAGE XR,metformin,biguanide
+ADOL,paracetamol,analgesic
+GASTRIMUT,omeprazole,proton pump inhibitor
+EXONAR,esomeprazole,proton pump inhibitor
+RAPIDUS,diclofenac,NSAID
+FLUMIVIR,oseltamivir,antiviral
+PLENICA,pregabalin,gabapentinoid
+TAMIFLU,oseltamivir,antiviral
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
