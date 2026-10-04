@@ -100,10 +100,12 @@ async def resend_later():
 
 
 async def scheduler_loop():
+    from app.care import alert_unanswered  # STEP 6: imported here because care.py imports this file
     while True:
         try:
             await send_due_reminders()
             await resend_later()
+            await alert_unanswered()  # STEP 6
         except Exception as e:
             print("Scheduler error:", e)
         await asyncio.sleep(30)

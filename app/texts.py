@@ -34,6 +34,10 @@ TEXTS = {
         "en": "{patient}'s answer: {reason}. Medicine: {medicine}, due at {time}. A call from you would help.",
         "ar": "جواب {patient}: {reason}. الدوا: {medicine}، موعدو الساعة {time}. اتصال منك بيساعد.",
     },
+    "no_answer": {
+        "en": "{patient} did not answer the reminder for {medicine} at {time}. A call from you would help.",
+        "ar": "{patient} ما جاوب على تذكير {medicine} الساعة {time}. اتصال منك بيساعد.",
+    },
     "checking": {
         "en": "Message from {name}: \"I'll check on you.\"",
         "ar": "رسالة من {name}: «رح إتطمّن عليك».",
