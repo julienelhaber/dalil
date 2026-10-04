@@ -11,8 +11,6 @@ from app.texts import TEXTS, YES_NO
 from app.whatsapp import download_media, send_buttons, send_text
 
 ENGINE = RapidOCR()
-STRENGTH = re.compile(r"(\d+(?:[.,]\d+)?)\s*m\s*g", re.I)
-PACK = re.compile(r"(\d+)\s*(?:capsules?|caps|tablets?|tabs|g[ée]lules?|comprim)", re.I)
 
 
 def number(text):
@@ -42,15 +40,14 @@ def read_box(image):
     if score < 80:
         return None
     text = re.sub(r"[^0-9A-Za-zÀ-ÿ.,/%+\- ]", " ", " ".join(r[1] for r in result))
-    strength, pack = STRENGTH.search(text), PACK.search(text)
+    numbers = {number(n) for n in re.findall(r"\d+(?:[.,]\d+)?", text)}  # STEP 7
     with get_conn() as conn:
         rows = conn.execute(
             "SELECT * FROM drug_reference WHERE brand_name = ? ORDER BY id", (brand,)
         ).fetchall()
-    if strength:
-        rows = [r for r in rows if number(r["strength"]) == number(strength.group(1))] or rows
-    if pack:
-        rows = [r for r in rows if r["pack_size"] == int(pack.group(1))] or rows
+    # STEP 7: keep the rows whose strength and pack size are printed on the box
+    rows = [r for r in rows if number(r["strength"]) in numbers] or rows
+    rows = [r for r in rows if r["pack_size"] in numbers] or rows
     return rows[0]
 
 
