@@ -14,5 +14,5 @@ class Settings:
     DEMO_RITA_PHONE = os.getenv("DEMO_RITA_PHONE", "")
     DEMO_GEORGES_PHONE = os.getenv("DEMO_GEORGES_PHONE", "")
     LATER_MINUTES = int(os.getenv("LATER_MINUTES", "30"))
-
+    ADMIN_PHONE = os.getenv("ADMIN_PHONE", "")  # PILOT 1: your own number, digits with 961
 settings = Settings()

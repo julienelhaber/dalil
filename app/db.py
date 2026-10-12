@@ -85,6 +85,15 @@ CREATE TABLE IF NOT EXISTS dose_events (
     responded_at TEXT,
     UNIQUE (schedule_id, due_at)
 );
+-- PILOT 1: new numbers wait for the admin. No row = approved
+-- (people from before this step, and the demo users).
+CREATE TABLE IF NOT EXISTS access (
+    user_id      INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    status       TEXT NOT NULL DEFAULT 'pending'
+                 CHECK (status IN ('pending', 'approved', 'rejected')),
+    requested_at TEXT NOT NULL,
+    decided_at   TEXT
+);
 """
 
 
@@ -143,6 +152,10 @@ def upsert_inbound_user(wa_user_id: str | None, phone: str | None,
                 (phone, wa_user_id, name, now, now),
             )
             user_id, is_new = cur.lastrowid, True
+            conn.execute(
+                "INSERT INTO access (user_id, requested_at) VALUES (?, ?)",
+                (user_id, now),
+            )  # PILOT 1: every new number starts as pending
         else:
             user_id, is_new = user["id"], False
             conn.execute(

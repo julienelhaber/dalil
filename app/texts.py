@@ -119,3 +119,26 @@ WORDS = {
     "LATER": {"2", "٢", "later", "ba3d", "بعد", "لاحق"},
     "PROBLEM": {"3", "٣", "problem", "moshk", "mushk", "mechk", "مشكل"},
 }
+# Access requests (Pilot 1): Arabic and English in one message, the language is not known yet
+ACCESS_PENDING = (
+    "أهلا! وصل طلبك لدليل. رح يوصلك مسج أول ما يجهز حسابك.\n\n"
+    "Hi! Your request to use Dalil was sent. You'll get a message as soon as your access is ready."
+)
+ACCESS_WAITING = (
+    "طلبك بعدو عم ينطر الموافقة. رح خبّرك أول ما يجهز.\n\n"
+    "Your request is still waiting for approval. I'll tell you as soon as it's ready."
+)
+ACCESS_REJECTED = (
+    "عذراً، دليل مش متاح إلك هلّق. شكراً لاهتمامك.\n\n"
+    "Sorry, Dalil isn't available for you right now. Thanks for your interest."
+)
+# Messages to the admin (you), English only
+ADMIN = {
+    "new": "New request: {who}",
+    "approved": "Approved {who}. They got the welcome message.",
+    "approved_later": "Approved {who}. Their 24-hour window is closed, so they'll get the welcome when they write again.",
+    "rejected": "Rejected {who}.",
+    "already": "{who} is already {status}.",
+    "none": "No pending requests.",
+}
+ADMIN_WORDS = {"pending", "requests"}

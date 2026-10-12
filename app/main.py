@@ -2,6 +2,7 @@ import asyncio  # STEP 2
 from contextlib import asynccontextmanager  # NEW
 
 from fastapi import FastAPI, Request, Response, HTTPException
+from app.access import handle_access  # PILOT 1
 from app.care import handle_check, handle_reason, handle_typed_reason  # STEP 3
 from app.config import settings
 from app.consent import handle_consent  # STEP 5
@@ -59,6 +60,8 @@ async def receive(request: Request):
 
 # STEP 2: everything below is new
 async def handle_message(user, msg, is_new):
+    if await handle_access(user, msg, is_new):  # PILOT 1: new numbers wait for the admin
+        return
     if await handle_consent(user, msg):  # STEP 5: consent and STOP come first
         return
     kind = msg.get("type")
