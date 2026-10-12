@@ -4,7 +4,7 @@
 
 Built solo by Julien Haber for the World Bank x Hack-Nation "Small AI for Development" challenge, Health track (Oct 3 to 4, 2026).
 
-**Try it without WhatsApp:** the [click-through demo](https://julienelhaber.github.io/dalil/) replays Dalil's real messages, in Arabic and English.
+**Try it without WhatsApp:** the [click-through demo](https://julienelhaber.github.io/dalil/) replays Dalil's real messages, in Arabic and English. **Video (about 3 minutes):** [watch it](https://drive.google.com/file/d/1r6pgOUHpd4GG1Mnr4ZK-UWUfymNsOoWF/view?usp=sharing).
 
 ## The problem
 
@@ -44,7 +44,7 @@ Also built: if a reminder gets no answer for 60 minutes, the dose is marked miss
 - **Consent first, and STOP.** The first message from anyone explains, in Arabic and English, what Dalil saves and that it is not a doctor and never changes a dose. Nothing is sent or saved about medicines until the person taps Yes. Typing STOP (or وقف) stops all reminders and alerts at once.
 - **Fixed messages:** every sentence Dalil can send is written in advance and reviewed, in each language.
 
-## Works offline, on phones people already have
+## The AI works offline, on phones people already have
 
 - The AI (OCR model, matching, MoPH list in SQLite) runs on one small machine with no internet needed for it. Only the WhatsApp messages travel over the network.
 - Patients need nothing new: WhatsApp on the phone they have. Replies are one tap or one digit, so the same flow can run over plain SMS on a basic phone (the SMS gateway is not built yet).
