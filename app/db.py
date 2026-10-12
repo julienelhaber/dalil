@@ -94,6 +94,14 @@ CREATE TABLE IF NOT EXISTS access (
     requested_at TEXT NOT NULL,
     decided_at   TEXT
 );
+
+-- PILOT 2: where each person is in the setup chat. No row = not in setup.
+CREATE TABLE IF NOT EXISTS conversations (
+    user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    step       TEXT NOT NULL,
+    data       TEXT NOT NULL DEFAULT '{}',
+    updated_at TEXT NOT NULL
+);
 """
 
 

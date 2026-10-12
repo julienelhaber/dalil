@@ -9,6 +9,7 @@ from app.consent import handle_consent  # STEP 5
 from app.db import init_db, upsert_inbound_user  # NEW
 from app.photo import handle_med_no, handle_med_yes, handle_photo  # STEP 4
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
+from app.setup import handle_setup  # PILOT 2
 from app.texts import TEXTS  # STEP 5
 from app.whatsapp import send_text
 
@@ -63,6 +64,8 @@ async def handle_message(user, msg, is_new):
     if await handle_access(user, msg, is_new):  # PILOT 1: new numbers wait for the admin
         return
     if await handle_consent(user, msg):  # STEP 5: consent and STOP come first
+        return
+    if await handle_setup(user, msg):  # PILOT 2: people in the middle of setup
         return
     kind = msg.get("type")
     if kind == "button":

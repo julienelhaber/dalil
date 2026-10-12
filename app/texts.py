@@ -142,3 +142,27 @@ ADMIN = {
     "none": "No pending requests.",
 }
 ADMIN_WORDS = {"pending", "requests"}
+# Setup chat (Pilot 2)
+SETUP = {
+    "ask_name": {
+        "en": "What's your name?",
+        "ar": "شو اسمك؟",
+    },
+    "for_whom": {
+        "en": "Nice to meet you, {name}! Who is Dalil for?",
+        "ar": "تشرّفنا {name}! دليل لمين؟",
+    },
+    "tap_button": {
+        "en": "Tap a button, or type 1 or 2.",
+        "ar": "كبوس على زر، أو اكتب 1 أو 2.",
+    },
+    "ask_medicine": {
+        "en": "Let's add the medicines one by one. Send me a photo of the first medicine box, or type its name.",
+        "ar": "يلّا نزيد الأدوية وحدة وحدة. ابعتلي صورة علبة أول دوا، أو اكتب اسمو.",
+    },
+}
+FOR_WHOM_BUTTONS = {
+    "en": [("FOR:me", "For me"), ("FOR:family", "For a family member")],
+    "ar": [("FOR:me", "إلي أنا"), ("FOR:family", "لحدا من العيلة")],
+}
+FOR_WHOM_WORDS = {"1": "me", "١": "me", "2": "family", "٢": "family"}

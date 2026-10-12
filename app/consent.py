@@ -1,5 +1,6 @@
 from app.db import get_conn
 from app.reminders import lang_of
+from app.setup import start_setup  # PILOT 2
 from app.texts import CONSENT_BUTTONS, CONSENT_NO, CONSENT_PROMPT, STOP_WORDS, TEXTS
 from app.whatsapp import send_buttons, send_text
 
@@ -25,6 +26,7 @@ async def handle_consent(user, msg):
         else:
             set_consent(user["id"], 1, choice)
             await send_text(to, TEXTS["consent_yes"][choice])
+            await start_setup(user, to, choice)  # PILOT 2: new people go on to setup
         return True
     if text in STOP_WORDS:
         set_consent(user["id"], 0)
