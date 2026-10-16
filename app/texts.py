@@ -60,8 +60,8 @@ TEXTS = {
         "ar": "ماشي، ما سجّلتو. بعتلي صورة أوضح، أو اسأل الصيدلي.",
     },
     "unknown": {
-        "en": "I can't check {new} against your other medicines yet. Ask your pharmacist before you start it.",
-        "ar": "بعدني ما بقدر قارن {new} مع أدويتك التانية. اسأل الصيدلي قبل ما تبلّش فيه.",
+        "en": "Saved. Note: I can't check {new} against your other medicines for double doses yet. Ask your pharmacist if you're not sure.",
+        "ar": "سجّلتو. بس انتبه: بعدني ما بقدر قارن {new} مع أدويتك التانية إذا في جرعة دبل. اسأل الصيدلي إذا مش متأكد.",
     },
     "same": {
         "en": "Careful: {new} and {old} are the same medicine ({shared}) under two names. Taking both would double the dose. Don't take {new} before you ask your doctor or pharmacist.",
@@ -160,9 +160,125 @@ SETUP = {
         "en": "Let's add the medicines one by one. Send me a photo of the first medicine box, or type its name.",
         "ar": "يلّا نزيد الأدوية وحدة وحدة. ابعتلي صورة علبة أول دوا، أو اكتب اسمو.",
     },
+    # PILOT 3: the medicine loop
+    "ask_next": {
+        "en": "Send me a photo of the next medicine box, or type its name.",
+        "ar": "ابعتلي صورة علبة الدوا اللي بعدو، أو اكتب اسمو.",
+    },
+    "photo_no": {
+        "en": "OK. Send a clearer photo of the box, or type the medicine name.",
+        "ar": "ماشي. ابعتلي صورة أوضح للعلبة، أو اكتب اسم الدوا.",
+    },
+    "which": {
+        "en": "Which one is it?",
+        "ar": "أيّا واحد هو؟",
+    },
+    "choose": {
+        "en": "Choose",
+        "ar": "اختار",
+    },
+    "none_row": {
+        "en": "Not in this list",
+        "ar": "مش بهاللائحة",
+    },
+    "not_found": {
+        "en": "I couldn't find \"{name}\" in the Ministry of Health list. Save it as you typed it, or type the name again?",
+        "ar": "ما لقيت «{name}» بلائحة وزارة الصحة. بتحفظو متل ما كتبتو، أو بتكتب الاسم مرة تانية؟",
+    },
+    "retype": {
+        "en": "OK, type the medicine name.",
+        "ar": "ماشي، اكتب اسم الدوا.",
+    },
+    "ask_dose": {
+        "en": "How much {medicine} do you take each time?",
+        "ar": "قدّيش بتاخد من {medicine} كل مرة؟",
+    },
+    "dose_hint": {
+        "en": "Tap a button, or type a number like 1 or 1.5.",
+        "ar": "كبوس على زر، أو اكتب رقم متل 1 أو 1.5.",
+    },
+    "ask_time": {
+        "en": "When do you take {medicine}? Choose a time.",
+        "ar": "إيمتى بتاخد {medicine}؟ اختار الوقت.",
+    },
+    "time_hint": {
+        "en": "Tap \"Choose a time\", or type a time like 8:30.",
+        "ar": "كبوس على «اختار الوقت»، أو اكتب وقت متل 8:30.",
+    },
+    "time_button": {
+        "en": "Choose a time",
+        "ar": "اختار الوقت",
+    },
+    "type_time": {
+        "en": "Type the time, like 8:30 or 21:00.",
+        "ar": "اكتب الوقت، متل 8:30 أو 21:00.",
+    },
+    "bad_time": {
+        "en": "I didn't get that time. Type it like 8:30 or 21:00.",
+        "ar": "ما فهمت الوقت. اكتبو متل 8:30 أو 21:00.",
+    },
+    "time_saved": {
+        "en": "Saved: {medicine} at {times}. Do you take it at another time too?",
+        "ar": "سجّلت: {medicine} الساعة {times}. بتاخدو بوقت تاني كمان؟",
+    },
+    "med_saved": {
+        "en": "{medicine}: {dose} at {times}. Add another medicine?",
+        "ar": "{medicine}: {dose} الساعة {times}. بدك تزيد دوا تاني؟",
+    },
+    "next_or_done": {
+        "en": "Add another medicine, or are you done?",
+        "ar": "بدك تزيد دوا تاني، أو خلصت؟",
+    },
+    "saved_alone": {
+        "en": "Saved: {medicine}, {dose} at {times}. I'll remind you at those times.",
+        "ar": "سجّلت: {medicine}، {dose} الساعة {times}. رح ذكّرك بهالأوقات.",
+    },
+    "summary": {
+        "en": "You're all set, {name}!\n\n{lines}\n\nYour first reminder is {first}. Type STOP at any time to stop everything.",
+        "ar": "كل شي جاهز يا {name}!\n\n{lines}\n\nأول تذكير {first}. اكتب «وقف» بأي وقت لتوقّف كل شي.",
+    },
+    "line": {
+        "en": "• {medicine}: {dose} at {times}",
+        "ar": "• {medicine}: {dose} الساعة {times}",
+    },
+    "line_no_time": {
+        "en": "• {medicine}: no reminder time yet",
+        "ar": "• {medicine}: بعد ما في وقت للتذكير",
+    },
+    "today": {
+        "en": "today at {time}",
+        "ar": "اليوم الساعة {time}",
+    },
+    "tomorrow": {
+        "en": "tomorrow at {time}",
+        "ar": "بكرا الساعة {time}",
+    },
 }
 FOR_WHOM_BUTTONS = {
     "en": [("FOR:me", "For me"), ("FOR:family", "For a family member")],
     "ar": [("FOR:me", "إلي أنا"), ("FOR:family", "لحدا من العيلة")],
 }
 FOR_WHOM_WORDS = {"1": "me", "١": "me", "2": "family", "٢": "family"}
+# PILOT 3: buttons and menus of the medicine loop
+NOT_FOUND_BUTTONS = {
+    "en": [("MED_TYPED", "Save as typed"), ("MED_RETYPE", "Type it again")],
+    "ar": [("MED_TYPED", "احفظو هيك"), ("MED_RETYPE", "بكتبو من جديد")],
+}
+DOSE_BUTTONS = {
+    "en": [("DOSE:1", "1 pill"), ("DOSE:0.5", "Half a pill"), ("DOSE:2", "2 pills")],
+    "ar": [("DOSE:1", "حبة وحدة"), ("DOSE:0.5", "نص حبة"), ("DOSE:2", "حبتين")],
+}
+TIME_ROWS = {
+    "en": [("TIME:08:00", "Morning, 8:00"), ("TIME:14:00", "Noon, 14:00"), ("TIME:20:00", "Evening, 20:00"),
+           ("TIME:22:00", "Bedtime, 22:00"), ("TIME:other", "Other time")],
+    "ar": [("TIME:08:00", "الصبح، 8:00"), ("TIME:14:00", "الضهر، 14:00"), ("TIME:20:00", "المسا، 20:00"),
+           ("TIME:22:00", "قبل النوم، 22:00"), ("TIME:other", "وقت تاني")],
+}
+MORE_TIME_BUTTONS = {
+    "en": [("TIMES:more", "Yes, add a time"), ("TIMES:done", "No, that's all")],
+    "ar": [("TIMES:more", "إيه، زيد وقت"), ("TIMES:done", "لا، هيك بس")],
+}
+MORE_MED_BUTTONS = {
+    "en": [("MORE:add", "Add another"), ("MORE:done", "Done")],
+    "ar": [("MORE:add", "زيد دوا"), ("MORE:done", "خلصت")],
+}

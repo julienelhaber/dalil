@@ -62,6 +62,25 @@ async def send_buttons(to: str, body: str, buttons: list):
     })
 
 
+async def send_list(to: str, body: str, button: str, rows: list):
+    """PILOT 3: a menu of up to 10 rows. rows = (id, title, description)."""
+    return await _post({
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "interactive",
+        "interactive": {
+            "type": "list",
+            "body": {"text": body},
+            "action": {
+                "button": button,
+                "sections": [{"title": button, "rows": [
+                    {"id": rid, "title": title[:24], **({"description": desc[:72]} if desc else {})}
+                    for rid, title, desc in rows
+                ]}],
+            },
+        },
+    })
+
 
 async def download_media(media_id: str) -> bytes:
     headers = {"Authorization": f"Bearer {settings.WHATSAPP_TOKEN}"}

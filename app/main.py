@@ -7,7 +7,7 @@ from app.care import handle_check, handle_reason, handle_typed_reason  # STEP 3
 from app.config import settings
 from app.consent import handle_consent  # STEP 5
 from app.db import init_db, upsert_inbound_user  # NEW
-from app.photo import handle_med_no, handle_med_yes, handle_photo  # STEP 4
+from app.photo import handle_med_no, handle_photo  # STEP 4 (PILOT 3: MED_YES moved to setup.py)
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
 from app.setup import handle_setup  # PILOT 2
 from app.texts import TEXTS  # STEP 5
@@ -95,8 +95,6 @@ async def handle_reply_id(user, reply_id):
         return await handle_reason(user, int(parts[1]), parts[2])
     if parts[0] == "CHECK" and len(parts) == 2:  # STEP 3
         return await handle_check(user, int(parts[1]))
-    if parts[0] == "MED_YES" and len(parts) == 2:  # STEP 4
-        return await handle_med_yes(user, int(parts[1]))
     if parts[0] == "MED_NO":  # STEP 4
         return await handle_med_no(user)
     return False
