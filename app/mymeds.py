@@ -1,14 +1,18 @@
-"""PILOT 8: "my medicines": the list, stopping a medicine, and changing its times or dose."""
+"""PILOT 8: "my medicines": the list, stopping a medicine, and changing its times or dose.
+The family member who set up a parent's medicines can do all of it for the parent too."""
+from app.access import window_open
 from app.db import get_conn
 from app.reminders import lang_of
-from app.setup import (end_chat, is_greeting, is_my_meds, is_start_over, medicine_detail, medicine_info,
-                       medicine_lines, offer_drugs, parse_dose, parse_time, set_step, two_choice)
+from app.setup import (cared_by, editable_for, end_chat, is_greeting, is_my_meds, is_start_over,
+                       medicine_detail, medicine_info, medicine_lines, offer_drugs, parse_dose, parse_time,
+                       say, set_step, two_choice)
 from app.texts import (DOSE_BUTTONS, MED_ACTION_BUTTONS, MEDS, MORE_TIME_BUTTONS, SETUP, STOP_MED_BUTTONS,
                        TIME_ROWS)
 from app.whatsapp import send_buttons, send_list, send_text
 
 # Button and menu ids: MYMED:<medicine id> opens one medicine, the others act on it
-MY_MEDS_IDS = ("MYMED", "MSTOP", "MSTOPYES", "MKEEP", "MTIMES", "MDOSE", "MSAME", "MADD")
+# (MLIST:<user id> answers "Whose medicines?")
+MY_MEDS_IDS = ("MYMED", "MSTOP", "MSTOPYES", "MKEEP", "MTIMES", "MDOSE", "MSAME", "MADD", "MLIST")
 CHANGE_IDS = ("DOSE:", "TIME:", "TIMES:")  # the setup buttons a change reuses
 
 
@@ -28,25 +32,78 @@ def brand_rows(conn, brand):
     return unique[:9]
 
 
-def can_change(user, med):
-    """Only the person who takes it, for now (the family member who set it up comes in step 3)."""
-    return med["patient_id"] == user["id"]
+def can_change(conn, user, patient_id):
+    """The person who takes it, and the family member who set it up (not family added only for alerts)."""
+    return patient_id == user["id"] or patient_id in {p["id"] for p in editable_for(conn, user["id"])}
 
 
-async def show_list(user):
-    """Every medicine in the message, the first 9 in the menu, then "Add a medicine"."""
+def text_for(key, lang, parent=None, **args):
+    """Like setup.say: the "_for" text when the list is someone else's ("I'll remind Rita")."""
+    if parent and key + "_for" in MEDS:
+        key += "_for"
+    return MEDS[key][lang].format(patient=parent, **args)
+
+
+def choices(options):
+    """Up to 3 choices as buttons, more as a menu."""
+    return len(options) <= 3
+
+
+async def ask_whose_list(user, others):
+    """Build step 3: "Whose medicines?" Mine, or someone whose medicines this person set up."""
+    lang, to = lang_of(user), user["phone"]
+    options = [(f"MLIST:{user['id']}", MEDS["mine"][lang])]
+    options += [(f"MLIST:{p['id']}", (p["name"] or "?")[:20]) for p in others]
+    if choices(options):
+        await send_buttons(to, MEDS["whose"][lang], options)
+    else:
+        await send_list(to, MEDS["whose"][lang], SETUP["choose"][lang], [(i, t, "") for i, t in options[:10]])
+    return True
+
+
+async def show_list(user, patient=None):
+    """Every medicine in the message, the first 9 in the menu, then "Add a medicine".
+    Build step 3: someone who set up a parent's medicines picks whose list first (the parent's opens
+    straight away when they have none of their own and set up only one person)."""
     lang, to = lang_of(user), user["phone"]
     with get_conn() as conn:
-        meds = active_medicines(conn, user["id"])
-        lines, _ = medicine_lines(conn, user["id"], lang)
+        others = editable_for(conn, user["id"])
+        mine = active_medicines(conn, user["id"])
+    if patient is None and others:
+        if mine or len(others) > 1:
+            return await ask_whose_list(user, others)
+        patient = others[0]
+    patient = patient or user
+    parent = patient["name"] if patient["id"] != user["id"] else None
+    with get_conn() as conn:
+        meds = active_medicines(conn, patient["id"])
+        lines, _ = medicine_lines(conn, patient["id"], lang)
         details = [medicine_detail(conn, m["id"], lang)[0] for m in meds[:9]]
     if not meds:
-        await send_text(to, MEDS["none"][lang])
+        await send_text(to, text_for("none", lang, parent))
         return True
     rows = [(f"MYMED:{m['id']}", m["display_name"], d) for m, d in zip(meds, details)]
     rows.append(("MADD", MEDS["add_row"][lang], ""))
-    await send_list(to, MEDS["list"][lang].format(lines=lines), MEDS["list_button"][lang], rows)
+    await send_list(to, text_for("list", lang, parent, lines=lines), MEDS["list_button"][lang], rows)
     return True
+
+
+async def tell_others(user, patient_id, key, medicine_id):
+    """Build step 3: a short note to the other side, only inside their 24-hour window (no template).
+    Someone else changed the list: the person who takes the medicine. They changed it: their family."""
+    with get_conn() as conn:
+        if patient_id == user["id"]:
+            people = cared_by(conn, patient_id)
+        else:
+            people = conn.execute("SELECT * FROM users WHERE id = ?", (patient_id,)).fetchall()
+        name, _ = medicine_info(conn, medicine_id)
+        details = {lang: medicine_detail(conn, medicine_id, lang)[0] for lang in ("en", "ar")}
+    for person in people:
+        if person["consent"] and window_open(person):  # nothing before they agree
+            lang = lang_of(person)
+            note = key + "_you" if person["id"] == patient_id else key
+            await send_text(person["phone"], MEDS[note][lang].format(
+                who=user["name"] or "?", medicine=name, detail=details[lang]))
 
 
 async def handle_my_meds_reply(user, reply_id):
@@ -58,6 +115,13 @@ async def handle_my_meds_reply(user, reply_id):
     kind, _, medicine_id = reply_id.partition(":")
     if not medicine_id.isdigit():
         return False
+    if kind == "MLIST":  # the answer to "Whose medicines?"
+        with get_conn() as conn:
+            patient = conn.execute("SELECT * FROM users WHERE id = ?", (int(medicine_id),)).fetchone()
+            allowed = patient is not None and can_change(conn, user, patient["id"])
+        if not allowed:
+            return False
+        return await show_list(user, patient)
     with get_conn() as conn:
         med = conn.execute(
             """SELECT m.*, u.name AS patient_name FROM medicines m
@@ -68,10 +132,12 @@ async def handle_my_meds_reply(user, reply_id):
             "SELECT brand_name FROM drug_reference WHERE id = ?", (med["drug_id"],)
         ).fetchone()
         drugs = brand_rows(conn, drug["brand_name"]) if drug else []
+        allowed = med is not None and can_change(conn, user, med["patient_id"])
     if med is None:
         return False
     name = med["display_name"]
-    if not can_change(user, med):
+    parent = med["patient_name"] if med["patient_id"] != user["id"] else None
+    if not allowed:
         await send_text(to, MEDS["not_yours"][lang].format(patient=med["patient_name"]))
         return True
     if kind == "MSAME":  # another one of a medicine already on the list: all its strengths
@@ -87,15 +153,16 @@ async def handle_my_meds_reply(user, reply_id):
         detail, times = medicine_detail(conn, med["id"], lang)
     actions = [(f"{k}:{med['id']}", t) for k, t in MED_ACTION_BUTTONS[lang]]
     if kind == "MYMED":
-        await send_buttons(to, MEDS["what"][lang].format(medicine=name, detail=detail), actions)
+        await send_buttons(to, text_for("what", lang, parent, medicine=name, detail=detail), actions)
     elif kind == "MSTOP":
-        await send_buttons(to, MEDS["stop_ask"][lang].format(medicine=name),
+        await send_buttons(to, text_for("stop_ask", lang, parent, medicine=name),
                            [(f"{k}:{med['id']}", t) for k, t in STOP_MED_BUTTONS[lang]])
     elif kind == "MSTOPYES":  # off, not deleted: the family can still see past doses
         with get_conn() as conn:
             conn.execute("UPDATE medicines SET active = 0 WHERE id = ?", (med["id"],))
             left = active_medicines(conn, med["patient_id"])
-        await send_text(to, MEDS["stopped" if left else "stopped_last"][lang].format(medicine=name))
+        await send_text(to, text_for("stopped" if left else "stopped_last", lang, parent, medicine=name))
+        await tell_others(user, med["patient_id"], "note_stopped", med["id"])
     elif kind == "MKEEP":
         await send_text(to, MEDS["kept"][lang].format(medicine=name))
     elif kind == "MDOSE" and not times:  # the dose is saved with each reminder time
@@ -103,6 +170,8 @@ async def handle_my_meds_reply(user, reply_id):
     else:  # MTIMES, MDOSE: a short chat, and nothing changes until its last answer
         step = "change_time" if kind == "MTIMES" else "change_dose"
         data = {"medicine_id": med["id"], "new_times": []}
+        if parent:
+            data["parent"] = parent  # setup.say then asks "When does Rita take it?"
         with get_conn() as conn:
             set_step(conn, user["id"], step, data)
         await ask_change(to, lang, step, data)
@@ -122,17 +191,18 @@ async def ask_change(to, lang, step, data, again=False, before=""):
         if times and not data["new_times"]:
             body = MEDS["times_now"][lang].format(medicine=name, times=", ".join(times))
         else:
-            body = SETUP["ask_time"][lang].format(medicine=name)
+            body = say("ask_time", lang, data, medicine=name)
         if again:
             body = SETUP["time_hint"][lang] + "\n\n" + body
         rows = [(rid, title, "") for rid, title in TIME_ROWS[lang]]
         await send_list(to, before + body, SETUP["time_button"][lang], rows)
         return
     if step == "change_dose":
-        body = SETUP["ask_dose"][lang].format(medicine=name)
+        body = say("ask_dose", lang, data, medicine=name)
         hint, buttons = SETUP["dose_hint"][lang], DOSE_BUTTONS[lang]
     else:  # change_more
-        body = MEDS["new_times"][lang].format(medicine=name, times=", ".join(data["new_times"]))
+        body = text_for("new_times", lang, data.get("parent"),
+                        medicine=name, times=", ".join(data["new_times"]))
         hint, buttons = SETUP["tap_button"][lang], MORE_TIME_BUTTONS[lang]
     if again:
         body = hint + "\n\n" + body
@@ -166,10 +236,15 @@ async def save_times(user, to, lang, data):
             )
         name, times = medicine_info(conn, medicine_id)
         detail, _ = medicine_detail(conn, medicine_id, lang)
+        patient_id = conn.execute(
+            "SELECT patient_id FROM medicines WHERE id = ?", (medicine_id,)
+        ).fetchone()[0]
     if old:
-        await send_text(to, MEDS["times_saved"][lang].format(medicine=name, times=", ".join(times)))
+        await send_text(to, text_for("times_saved", lang, data.get("parent"),
+                                     medicine=name, times=", ".join(times)))
     else:  # it had no time before: say the dose too
         await send_text(to, MEDS["dose_saved"][lang].format(medicine=name, detail=detail))
+    await tell_others(user, patient_id, "note_changed", medicine_id)
     return True
 
 
@@ -183,7 +258,11 @@ async def save_dose(user, to, lang, data, dose):
         )
         name, _ = medicine_info(conn, data["medicine_id"])
         detail, _ = medicine_detail(conn, data["medicine_id"], lang)
+        patient_id = conn.execute(
+            "SELECT patient_id FROM medicines WHERE id = ?", (data["medicine_id"],)
+        ).fetchone()[0]
     await send_text(to, MEDS["dose_saved"][lang].format(medicine=name, detail=detail))
+    await tell_others(user, patient_id, "note_changed", data["medicine_id"])
     return True
 
 

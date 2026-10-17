@@ -242,6 +242,22 @@ SETUP = {
         "en": "Saved: {medicine}, {dose} at {times}. I'll remind you at those times.",
         "ar": "سجّلت: {medicine}، {dose} الساعة {times}. رح ذكّرك بهالأوقات.",
     },
+    "saved_alone_for": {  # PILOT 8: a medicine a family member adds for a parent after setup
+        "en": "Saved for {parent}: {medicine}, {dose} at {times}. I'll remind {parent} at those times.",
+        "ar": "سجّلت لـ{parent}: {medicine}، {dose} الساعة {times}. رح ذكّر {parent} بهالأوقات.",
+    },
+    "whose_new": {
+        "en": "Who is {medicine} for?",
+        "ar": "لمين {medicine}؟",
+    },
+    "for_me": {
+        "en": "For me",
+        "ar": "إلي أنا",
+    },
+    "for_name": {
+        "en": "For {name}",
+        "ar": "لـ{name}",
+    },
     "summary": {  # PILOT 8: + my medicines
         "en": "You're all set, {name}!\n\n{lines}\n\nYour first reminder is {first}. Type MY MEDICINES to see or change them, or STOP at any time to stop everything.",
         "ar": "كل شي جاهز يا {name}!\n\n{lines}\n\nأول تذكير {first}. اكتب «أدويتي» لتشوفهن أو تغيّرهن، أو «وقف» بأي وقت لتوقّف كل شي.",
@@ -430,10 +446,14 @@ GREETINGS = {"hi", "hii", "hey", "hello", "helo", "hallo", "hola", "salut", "bon
              "مساء الخير", "السلام عليكم", "سلام عليكم"}
 START_OVER_WORDS = {"start over", "restart", "start again", "begin again", "reset", "from the start",
                     "من الأول", "من الاول", "من أول", "من اول", "من جديد", "mn jdid", "min jdid"}
-# PILOT 8: "my medicines"
+# PILOT 8: "my medicines" (+ one medicine and دواء; is_my_meds also forgives أ/ا, ة/ه and small typos)
 MY_MEDS_WORDS = {"my medicines", "medicines", "my meds", "meds", "my medication", "medication",
                  "medications", "my list", "adwiti", "adweyti", "adwiyti", "adwyti", "adwiye",
-                 "أدويتي", "ادويتي", "الأدوية", "الادوية", "أدوية", "ادوية"}
+                 "أدويتي", "ادويتي", "الأدوية", "الادوية", "أدوية", "ادوية",
+                 "my medicine", "medicine", "my med", "my medications", "my pills", "pills",
+                 "my medicine list", "my medicines list", "medicine list", "medicines list",
+                 "dawa", "dawe", "dawaye", "dawayi", "adwiyeh", "adwiyte", "adweyte",
+                 "دوا", "دواء", "الدوا", "الدواء", "دوائي", "دوايي", "قائمة الأدوية", "لائحة الأدوية", "لائحتي"}
 MEDS = {
     "list": {
         "en": "Your medicines:\n\n{lines}\n\nTap \"Change\" to pick one.",
@@ -506,6 +526,72 @@ MEDS = {
     "unchanged": {
         "en": "OK, I didn't change anything.",
         "ar": "ماشي، ما غيّرت شي.",
+    },
+    "whose": {  # build step 3: a family member who set up someone's medicines
+        "en": "Whose medicines?",
+        "ar": "أدوية مين؟",
+    },
+    "mine": {
+        "en": "Mine",
+        "ar": "أدويتي",
+    },
+    "list_for": {
+        "en": "{patient}'s medicines:\n\n{lines}\n\nTap \"Change\" to pick one.",
+        "ar": "أدوية {patient}:\n\n{lines}\n\nكبوس على «غيّر» لتختار واحد.",
+    },
+    "none_for": {
+        "en": "{patient} has no medicines saved yet. Send a photo of the box, or type its name.",
+        "ar": "ما في أدوية مسجّلة لـ{patient} بعد. ابعتلي صورة العلبة، أو اكتب اسم الدوا.",
+    },
+    "what_for": {
+        "en": "{patient}'s {medicine}: {detail}. What do you want to change?",
+        "ar": "{medicine} تبع {patient}: {detail}. شو بدك تغيّر؟",
+    },
+    "stop_ask_for": {
+        "en": "Stop {patient}'s {medicine}? I won't send its reminders anymore.",
+        "ar": "بدك توقّف {medicine} تبع {patient}؟ ما رح ابعت تذكيرو بعد.",
+    },
+    "stopped_for": {
+        "en": "Stopped {medicine} for {patient}. {patient}'s other reminders stay the same.",
+        "ar": "وقّفت {medicine} لـ{patient}. باقي تذكيرات {patient} متل ما هي.",
+    },
+    "stopped_last_for": {
+        "en": "Stopped {medicine} for {patient}. {patient} has no medicines left, so no reminders. Send a photo of a box or type a name to add one.",
+        "ar": "وقّفت {medicine} لـ{patient}. ما بقى عند {patient} أدوية، يعني ما في تذكير. ابعتلي صورة علبة أو اكتب اسم دوا لتزيد واحد.",
+    },
+    "new_times_for": {
+        "en": "New times for {medicine}: {times}. Does {patient} take it at another time too?",
+        "ar": "الأوقات الجديدة لـ{medicine}: {times}. بياخدو {patient} بوقت تاني كمان؟",
+    },
+    "times_saved_for": {
+        "en": "Saved: {medicine} at {times}. I'll only remind {patient} at these times now.",
+        "ar": "سجّلت: {medicine} الساعة {times}. من هلّق بذكّر {patient} بس بهالأوقات.",
+    },
+    # Notes to the other side ("_you": to the person who takes the medicine). The Arabic says
+    # "at X's request, I..." so the verb never needs X's gender.
+    "note_stopped": {
+        "en": "{who} stopped {medicine}. No more reminders for it.",
+        "ar": "بطلب من {who}، وقّفت {medicine}. ما في تذكير إلو بعد.",
+    },
+    "note_stopped_you": {
+        "en": "{who} stopped {medicine} for you. I won't send its reminders anymore.",
+        "ar": "بطلب من {who}، وقّفتلك {medicine}. ما رح ابعتلك تذكيرو بعد.",
+    },
+    "note_changed": {
+        "en": "{who} changed {medicine}: now {detail}.",
+        "ar": "بطلب من {who}، غيّرت {medicine}: هلّق {detail}.",
+    },
+    "note_changed_you": {
+        "en": "{who} changed {medicine} for you: now {detail}.",
+        "ar": "بطلب من {who}، غيّرتلك {medicine}: هلّق {detail}.",
+    },
+    "note_added": {
+        "en": "{who} added {medicine}: {detail}.",
+        "ar": "بطلب من {who}، زدت {medicine}: {detail}.",
+    },
+    "note_added_you": {
+        "en": "{who} added {medicine} for you: {detail}. I'll remind you at those times.",
+        "ar": "بطلب من {who}، زدتلك {medicine}: {detail}. رح ذكّرك بهالأوقات.",
     },
     "on_list": {
         "en": "{medicine} is already on your list. Change it?",

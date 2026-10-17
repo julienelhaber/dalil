@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS care_links (
     patient_id          INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     alert_on_missed     INTEGER NOT NULL DEFAULT 1 CHECK (alert_on_missed IN (0, 1)),
     alert_after_minutes INTEGER NOT NULL DEFAULT 60,
+    can_edit            INTEGER NOT NULL DEFAULT 0 CHECK (can_edit IN (0, 1)),  -- PILOT 8: set up the medicines
     created_at          TEXT NOT NULL,
     UNIQUE (caregiver_id, patient_id),
     CHECK (caregiver_id != patient_id)
@@ -127,6 +128,11 @@ def get_conn():
 def init_db() -> None:
     with get_conn() as conn:
         conn.executescript(SCHEMA)
+        columns = [r["name"] for r in conn.execute("PRAGMA table_info(care_links)")]
+        if "can_edit" not in columns:  # PILOT 8: a database made before the column
+            conn.execute("ALTER TABLE care_links ADD COLUMN can_edit INTEGER NOT NULL DEFAULT 0"
+                         " CHECK (can_edit IN (0, 1))")
+            conn.execute("UPDATE care_links SET can_edit = 1")  # the links so far are test data
 
 
 def find_user(conn, wa_user_id: str | None, phone: str | None):

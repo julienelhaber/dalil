@@ -2,6 +2,8 @@ import json
 import re
 from datetime import datetime
 
+from rapidfuzz import fuzz, process
+
 from app.access import window_open  # PILOT 4
 from app.db import find_user, get_conn, now_utc
 from app.photo import drug_name, find_drugs, save_medicine  # PILOT 3
@@ -13,7 +15,7 @@ from app.texts import (DONE_WORDS, DOSE_BUTTONS, FAMILY_BUTTONS, FOR_WHOM_BUTTON
 from app.whatsapp import send_buttons, send_list, send_template, send_text
 
 # PILOT 3: button and menu ids that belong to the setup chat (PILOT 4: + FAMILY:, PILOT 5: + PLANG:)
-SETUP_IDS = ("FOR:", "MED_", "DOSE:", "TIME:", "TIMES:", "MORE:", "FAMILY:", "PLANG:")
+SETUP_IDS = ("FOR:", "MED_", "DOSE:", "TIME:", "TIMES:", "MORE:", "FAMILY:", "PLANG:", "WHO:")  # PILOT 8: + WHO:
 DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩٫", "0123456789.")
 # PILOT 5: what stays in the chat data from one medicine to the next (PILOT 7: + what start over removes)
 KEEP = ("for", "parent_id", "parent", "added", "parent_new", "link_new")
@@ -68,6 +70,15 @@ def cared_by(conn, user_id):
     ).fetchall()
 
 
+def editable_for(conn, user_id):
+    """PILOT 8: the people whose medicines this person set up, so they can change them."""
+    return conn.execute(
+        """SELECT u.* FROM care_links c JOIN users u ON u.id = c.patient_id
+           WHERE c.caregiver_id = ? AND c.can_edit = 1 ORDER BY c.id""",
+        (user_id,),
+    ).fetchall()
+
+
 def names(rows):
     return ", ".join(r["name"] or "?" for r in rows)
 
@@ -117,9 +128,20 @@ def is_greeting(text):
     return plain(text) in GREETINGS
 
 
+# أ إ آ read as ا, ة as ه and ى as ي, so أدوية, ادوية and ادويه are the same word
+ARABIC_PLAIN = str.maketrans("أإآةى", "اااهي")
+MY_MEDS_PLAIN = {w.translate(ARABIC_PLAIN) for w in MY_MEDS_WORDS}
+MY_MEDS_LATIN = [w for w in MY_MEDS_WORDS if w.isascii()]
+
+
 def is_my_meds(text):
-    """PILOT 8: my medicines, adwiti, أدويتي..."""
-    return plain(text) in MY_MEDS_WORDS
+    """PILOT 8: my medicines, my medicine, adwiti, أدويتي, دواء... and typos like "my medecines"."""
+    t = plain(text).translate(ARABIC_PLAIN)
+    if t in MY_MEDS_PLAIN:
+        return True
+    # typos only in Latin letters, 6 or more, so short words and medicine names are left alone
+    return (re.fullmatch(r"[a-z' ]{6,}", t) is not None
+            and process.extractOne(t, MY_MEDS_LATIN, scorer=fuzz.ratio, score_cutoff=85) is not None)
 
 
 def is_start_over(text):
@@ -371,8 +393,28 @@ def listed_medicine(conn, patient_id, brand):
     ).fetchone()
 
 
-async def medicine_chosen(user, to, lang, data, drug_id=None, typed=None):
+async def ask_whose_new(user, to, lang, others, drug_id):
+    """PILOT 8: after setup, "Who is Amlor 5mg for?" before anything is saved."""
+    with get_conn() as conn:
+        drug = conn.execute("SELECT * FROM drug_reference WHERE id = ?", (drug_id,)).fetchone()
+    options = [(f"WHO:{user['id']}:{drug_id}", SETUP["for_me"][lang])]
+    options += [(f"WHO:{p['id']}:{drug_id}", SETUP["for_name"][lang].format(name=p["name"] or "?")[:20])
+                for p in others]
+    body = SETUP["whose_new"][lang].format(medicine=drug_name(drug))
+    if len(options) <= 3:
+        await send_buttons(to, body, options)
+    else:
+        await send_list(to, body, SETUP["choose"][lang], [(i, t, "") for i, t in options[:10]])
+    return True
+
+
+async def medicine_chosen(user, to, lang, data, drug_id=None, typed=None, asked=False):
     """Save the medicine (after the double-dose check), then ask the dose."""
+    if drug_id and not asked and "for" not in data:  # PILOT 8: after setup, a family member who
+        with get_conn() as conn:                       # set up someone's medicines says whose it is
+            others = editable_for(conn, user["id"])
+        if others:
+            return await ask_whose_new(user, to, lang, others, drug_id)
     patient = patient_of(user, data)  # PILOT 5: the parent in the family path
     helper = user if patient["id"] != user["id"] else None
     medicine_id = await save_medicine(patient, drug_id, typed, helper)
@@ -449,7 +491,9 @@ async def medicine_done(user, to, lang, data):
     if "for" in data:
         await send_buttons(to, SETUP["med_saved"][lang].format(**args), MORE_MED_BUTTONS[lang])
     else:
-        await send_text(to, SETUP["saved_alone"][lang].format(**args))
+        await send_text(to, say("saved_alone", lang, data, **args))  # PILOT 8: or "Saved for Rita"
+        from app.mymeds import tell_others  # here, because mymeds.py imports this file
+        await tell_others(user, patient_of(user, data)["id"], "note_added", data["medicine_id"])
     return True
 
 
@@ -561,9 +605,13 @@ async def add_parent(user, to, lang, data, name, phone):
         parent_new = find_user(conn, None, phone) is None  # PILOT 7: start over removes a new parent
         parent = find_or_add(conn, name, phone)
         cur = conn.execute(
-            "INSERT OR IGNORE INTO care_links (caregiver_id, patient_id, created_at) VALUES (?, ?, ?)",
+            """INSERT OR IGNORE INTO care_links (caregiver_id, patient_id, can_edit, created_at)
+               VALUES (?, ?, 1, ?)""",
             (user["id"], parent["id"], now_utc()),
         )
+        if cur.rowcount == 0:  # PILOT 8: linked before for alerts only, now they set up the medicines
+            conn.execute("UPDATE care_links SET can_edit = 1 WHERE caregiver_id = ? AND patient_id = ?",
+                         (user["id"], parent["id"]))
         data.update(parent_id=parent["id"], parent=name, parent_new=parent_new, link_new=cur.rowcount == 1)
         set_step(conn, user["id"], "medicine", data)
     await send_text(to, say("ask_medicine", lang, data))
@@ -645,6 +693,17 @@ async def handle_setup(user, msg):
     to, lang = msg["from"], lang_of(user)
     data = json.loads(row["data"]) if row else {}
 
+    if reply_id.startswith("WHO:"):  # PILOT 8: the answer to "Who is Amlor 5mg for?"
+        _, patient_id, drug_id = reply_id.split(":")
+        with get_conn() as conn:
+            others = {p["id"]: p for p in editable_for(conn, user["id"])}
+        if int(patient_id) == user["id"]:
+            data = {}
+        elif int(patient_id) in others:
+            data = {"parent_id": int(patient_id), "parent": others[int(patient_id)]["name"]}
+        else:  # the family link is gone
+            return False
+        return await medicine_chosen(user, to, lang, data, drug_id=int(drug_id), asked=True)
     if reply_id.startswith("MED_YES:"):  # PILOT 3: a confirmed medicine, in setup or after
         return await medicine_chosen(user, to, lang, data, drug_id=int(reply_id.split(":")[1]))
     if row is None:
