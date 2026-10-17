@@ -106,9 +106,10 @@ async def handle_med_no(user):
     return True
 
 
-async def save_medicine(user, drug_id, typed_name=None):
-    """PILOT 3: double-dose check, then save. Returns the new medicine id, or None if not saved."""
-    lang = lang_of(user)
+async def save_medicine(user, drug_id, typed_name=None, helper=None):
+    """PILOT 3: double-dose check, then save. Returns the new medicine id, or None if not saved.
+    PILOT 5: helper is the family member adding medicines for user; the messages go to them."""
+    lang = lang_of(helper or user)
     with get_conn() as conn:
         drug = None
         if drug_id:
@@ -129,12 +130,18 @@ async def save_medicine(user, drug_id, typed_name=None):
         if shared:
             args = {"new": new, "old": med["display_name"],
                     "shared": ", ".join(sorted(shared)), "patient": user["name"]}
+            if helper:  # PILOT 5: only the family member adding it is told
+                await send_text(helper["phone"], TEXTS["same_for"][lang].format(**args))
+                return None
             await send_text(user["phone"], TEXTS["same"][lang].format(**args))
             for c in family:
                 await send_text(c["phone"], TEXTS["same_family"][lang_of(c)].format(**args))
             return None
     if current and not ingredients:  # nothing to compare with in our data
-        await send_text(user["phone"], TEXTS["unknown"][lang].format(new=new))
+        if helper:  # PILOT 5
+            await send_text(helper["phone"], TEXTS["unknown_for"][lang].format(new=new, patient=user["name"]))
+        else:
+            await send_text(user["phone"], TEXTS["unknown"][lang].format(new=new))
     with get_conn() as conn:
         cur = conn.execute(
             """INSERT INTO medicines (patient_id, drug_id, display_name,

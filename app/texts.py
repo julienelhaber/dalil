@@ -71,6 +71,15 @@ TEXTS = {
         "en": "Heads-up: {patient} sent a photo of {new}. It is the same medicine ({shared}) as {old}, which {patient} already takes. Taking both would double the dose. Please check with the doctor or pharmacist.",
         "ar": "تنبيه: {patient} بعت صورة {new}. هيدا نفس الدوا ({shared}) متل {old} اللي عم ياخدو. إذا أخد التنين، بتصير الجرعة دبل. تأكّد مع الحكيم أو الصيدلي.",
     },
+    # PILOT 5: a family member adding medicines for someone else
+    "same_for": {
+        "en": "Careful: {new} and {old} are the same medicine ({shared}) under two names. Taking both would double {patient}'s dose, so I didn't add {new}. Please check with the doctor or pharmacist.",
+        "ar": "انتبه: {new} و{old} هني نفس الدوا ({shared}) بس باسمين مختلفين. إذا أخد {patient} التنين، بتصير الجرعة دبل، فما زدت {new}. تأكّد مع الحكيم أو الصيدلي.",
+    },
+    "unknown_for": {
+        "en": "Saved. Note: I can't check {new} against {patient}'s other medicines for double doses yet. Ask the pharmacist if you're not sure.",
+        "ar": "سجّلتو. بس انتبه: بعدني ما بقدر قارن {new} مع أدوية {patient} التانية إذا في جرعة دبل. اسأل الصيدلي إذا مش متأكد.",
+    },
     "added": {
         "en": "Added {new} to your list. Ask your pharmacist how and when to take it.",
         "ar": "زدت {new} عاللائحة. اسأل الصيدلي كيف وإيمتى لازم تاخدو.",
@@ -294,6 +303,63 @@ SETUP = {
         "en": "{family} agreed. I'll tell them if you miss a dose.",
         "ar": "{family} وافق. رح خبّرو إذا ما أخدت دوا.",
     },
+    # PILOT 5: the family path (setting up someone else's medicines)
+    "parent_name": {
+        "en": "Who are the medicines for? Type their name, or share their contact.",
+        "ar": "لمين الأدوية؟ اكتب اسم الشخص، أو ابعتلي الكونتاكت.",
+    },
+    "parent_phone": {
+        "en": "What's {parent}'s WhatsApp number? The reminders go to that phone. For example 03 123 456 or +961 3 123 456.",
+        "ar": "شو رقم الواتساب تبع {parent}؟ التذكير بيروح عهالتلفون. متل 03 123 456 أو 961 3 123 456.",
+    },
+    "ask_medicine_for": {
+        "en": "Let's add {parent}'s medicines one by one. Send me a photo of the first medicine box, or type its name.",
+        "ar": "يلّا نزيد أدوية {parent} وحدة وحدة. ابعتلي صورة علبة أول دوا، أو اكتب اسمو.",
+    },
+    "ask_dose_for": {
+        "en": "How much {medicine} does {parent} take each time?",
+        "ar": "قدّيش بياخد {parent} من {medicine} كل مرة؟",
+    },
+    "ask_time_for": {
+        "en": "When does {parent} take {medicine}? Choose a time.",
+        "ar": "إيمتى بياخد {parent} {medicine}؟ اختار الوقت.",
+    },
+    "time_saved_for": {
+        "en": "Saved: {medicine} at {times}. Does {parent} take it at another time too?",
+        "ar": "سجّلت: {medicine} الساعة {times}. بياخدو {parent} بوقت تاني كمان؟",
+    },
+    "summary_for": {
+        "en": "All set for {parent}!\n\n{lines}\n\n{next}",
+        "ar": "كل شي جاهز لـ{parent}!\n\n{lines}\n\n{next}",
+    },
+    "parent_invite": {
+        "en": "Now ask {parent} to send \"hi\" to this WhatsApp number from their phone (you can forward my contact). When {parent} taps Yes, the reminders start, and I'll tell you if {parent} misses a dose.",
+        "ar": "هلّق قول لـ{parent} يبعت «hi» على هالرقم عالواتساب من تلفونو (فيك تبعتلو الكونتاكت تبعي). بس يكبس «إيه»، بيبلّش التذكير، ورح خبّرك إذا {parent} ما أخد دوا.",
+    },
+    "parent_lang": {
+        "en": "Which language should I use with {parent}?",
+        "ar": "بأي لغة بحكي مع {parent}؟",
+    },
+    "parent_invited": {
+        "en": "I sent {parent} a message asking them to agree. Tell {parent} it's coming from Dalil. When {parent} taps Yes, the reminders start, and I'll tell you if {parent} misses a dose.",
+        "ar": "بعتت لـ{parent} مسج ليوافق. خبّر {parent} إنو جايي من دليل. بس يكبس «إيه»، بيبلّش التذكير، ورح خبّرك إذا {parent} ما أخد دوا.",
+    },
+    "parent_active": {
+        "en": "{parent}'s first reminder is {first}. I'll tell you if {parent} misses a dose.",
+        "ar": "أول تذكير لـ{parent} {first}. رح خبّرك إذا {parent} ما أخد دوا.",
+    },
+    "parent_ready": {
+        "en": "You're set. Your medicines:\n\n{lines}\n\nYour first reminder is {first}.",
+        "ar": "كل شي جاهز. أدويتك:\n\n{lines}\n\nأول تذكير {first}.",
+    },
+    "parent_agreed": {
+        "en": "{parent} agreed. The first reminder is {first}.",
+        "ar": "{parent} وافق. أول تذكير {first}.",
+    },
+    "parent_said_no": {
+        "en": "{parent} said no, so I won't send any reminders. If {parent} changes their mind, they can message me again.",
+        "ar": "{parent} قال لا، فما رح ابعت تذكير. إذا غيّر رأيو، فيه يبعتلي مسج من جديد.",
+    },
 }
 FOR_WHOM_BUTTONS = {
     "en": [("FOR:me", "For me"), ("FOR:family", "For a family member")],
@@ -337,3 +403,12 @@ INVITED = (
     "{patients} زادك على دليل لحتى تعرف إذا نسي دوا.\n"
     "{patients} added you on Dalil so you know if they miss a dose."
 )
+# PILOT 5: above the consent message for someone whose medicines a family member set up
+INVITED_PARENT = (
+    "{carers} جهّزلك تذكير بأدويتك على دليل.\n"
+    "{carers} set up medicine reminders for you on Dalil."
+)
+PARENT_LANG_BUTTONS = {
+    "en": [("PLANG:ar", "Arabic"), ("PLANG:en", "English")],
+    "ar": [("PLANG:ar", "عربي"), ("PLANG:en", "إنكليزي")],
+}

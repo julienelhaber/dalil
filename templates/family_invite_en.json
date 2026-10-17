@@ -1,0 +1,37 @@
+{
+  "name": "family_invite",
+  "language": "en",
+  "category": "UTILITY",
+  "parameter_format": "named",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hello {{patient_name}}. Your family member {{caregiver_name}} set up medicine reminders for you on Dalil. Dalil sends your dose reminders here, saves your medicines and answers, and tells your family if you miss a dose. Dalil is not a doctor and never changes a dose. Do you agree?",
+      "example": {
+        "body_text_named_params": [
+          {
+            "param_name": "patient_name",
+            "example": "Georges"
+          },
+          {
+            "param_name": "caregiver_name",
+            "example": "Rita"
+          }
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "Yes, I agree"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "No"
+        }
+      ]
+    }
+  ]
+}
