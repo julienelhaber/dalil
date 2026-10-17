@@ -89,9 +89,9 @@ TEXTS = {
         "en": "Thanks! I'll remind you when a dose is due, and you can send me a photo of a medicine box to check it. Type STOP at any time to stop everything.",
         "ar": "شكراً! رح ذكّرك بس يجي وقت الدوا، وفيك تبعتلي صورة علبة دوا لإفحصها. اكتب «وقف» بأي وقت لتوقّف كل شي.",
     },
-    "stopped": {
-        "en": "I stopped your reminders and alerts. Send me a message any time to start again.",
-        "ar": "وقّفت التذكير والتنبيهات. إذا بدك ترجع، ابعتلي رسالة.",
+    "stopped": {  # PILOT 8: medicines stay saved; DELETE MY DATA removes them
+        "en": "I stopped your reminders and alerts. Your medicines stay saved, so send me a message any time to start again. To delete everything, type DELETE MY DATA.",
+        "ar": "وقّفت التذكير والتنبيهات. أدويتك بعدها محفوظة، فإذا بدك ترجع ابعتلي رسالة. لتمحي كل شي، اكتب «امحي معلوماتي».",
     },
     "menu": {  # PILOT 4: typed names work after setup too (PILOT 8: + my medicines)
         "en": "I'm Dalil. I remind you when a dose is due. To add a medicine, send me a photo of the box or type its name. Type MY MEDICINES to see or change your list. Type STOP to stop everything.",
@@ -108,9 +108,10 @@ CONSENT_PROMPT = (
     "I'm not a doctor and I never change a dose. Do you agree?"
 )
 CONSENT_BUTTONS = [("CONSENT:ar", "نعم، بالعربي"), ("CONSENT:en", "Yes, in English"), ("CONSENT:no", "No / لا")]
-CONSENT_NO = (
-    "ماشي، ما رح ذكّرك وما رح احفظ أدويتك. إذا غيّرت رأيك، ابعتلي رسالة.\n\n"
-    "OK, I won't remind you or save your medicines. If you change your mind, send me a message."
+CONSENT_NO = (  # PILOT 8: what is already saved stays until DELETE MY DATA
+    "ماشي، ما رح ذكّرك. إذا كان في شي محفوظ، بيضلّ محفوظ لحتى تكتب «امحي معلوماتي». إذا غيّرت رأيك، ابعتلي رسالة.\n\n"
+    "OK, I won't remind you. Anything already saved stays saved until you type DELETE MY DATA. "
+    "If you change your mind, send me a message."
 )
 STOP_WORDS = {"stop", "وقف", "وقّف", "wa2ef", "wa22ef"}
 
@@ -605,6 +606,48 @@ MED_ACTION_BUTTONS = {
 STOP_MED_BUTTONS = {
     "en": [("MSTOPYES", "Yes, stop it"), ("MKEEP", "No, keep it")],
     "ar": [("MSTOPYES", "إيه، وقّفو"), ("MKEEP", "لا، خلّيه")],
+}
+
+# PILOT 8, build step 4: "delete my data" (not a bare "delete": one word should not offer to wipe everything)
+DELETE_WORDS = {"delete my data", "delete all my data", "delete my account", "delete everything", "delete me",
+                "erase my data", "remove my data", "delete my information", "delete my info",
+                "em7i ma3loumeti", "em7i ma3loumete", "em7i ma3loumati", "emsa7 ma3loumeti", "emsah ma3loumeti",
+                "امحي معلوماتي", "امسح معلوماتي", "احذف معلوماتي", "امحي بياناتي", "امسح بياناتي", "احذف بياناتي",
+                "امحي حسابي", "احذف حسابي", "امحي كل معلوماتي", "امسح كل معلوماتي"}
+DELETE = {
+    "ask": {
+        "en": "This deletes everything Dalil saved about you: medicines, times, answers and family links. It can't be undone. Delete everything?",
+        "ar": "هيك بمحي كل شي سجّلو دليل عنك: الأدوية، الأوقات، الأجوبة وروابط العيلة. ما فيك ترجّعن بعدها. بدك امحي كل شي؟",
+    },
+    "ask_keeps": {  # one line per person whose medicines this person set up
+        "en": "{parent}'s medicines stay saved for {parent}.",
+        "ar": "أدوية {parent} بيضلّو محفوظين لـ{parent}.",
+    },
+    "ask_goes": {
+        "en": "{parent} hasn't agreed to Dalil yet, so {parent}'s list goes too.",
+        "ar": "ما في موافقة من {parent} بعد، فلائحة {parent} بتنمحى كمان.",
+    },
+    "deleted": {
+        "en": "Done, I deleted everything. If you write again, Dalil starts from the beginning.",
+        "ar": "خلص، محيت كل شي. إذا كتبتلي مرة تانية، منبلّش من الأول.",
+    },
+    "kept": {
+        "en": "OK, nothing was deleted.",
+        "ar": "ماشي، ما محيت شي.",
+    },
+    # to the other side, inside their 24-hour window; the Arabic says "X's data was deleted" so it needs no gender
+    "note_family": {
+        "en": "{who} deleted their data from Dalil, so you won't get alerts about their medicines anymore.",
+        "ar": "انمحت معلومات {who} من دليل، فما عاد رح يوصلك تنبيه عن أدوية {who}.",
+    },
+    "note_parent": {
+        "en": "{who} deleted their data from Dalil. Your medicines and reminders stay the same, but {who} won't get your alerts anymore.",
+        "ar": "انمحت معلومات {who} من دليل. أدويتك وتذكيراتك متل ما هي، بس ما عاد رح يوصل تنبيه لـ{who}.",
+    },
+}
+DELETE_BUTTONS = {
+    "en": [("DELETE:yes", "Yes, delete all"), ("DELETE:no", "No")],
+    "ar": [("DELETE:yes", "إيه، امحي كل شي"), ("DELETE:no", "لا")],
 }
 ON_LIST_BUTTONS = {
     "en": [("MYMED", "Change it"), ("MSAME", "Add another one")],

@@ -6,6 +6,7 @@ from app.access import handle_access  # PILOT 1
 from app.care import handle_check, handle_reason, handle_typed_reason  # STEP 3
 from app.config import settings
 from app.consent import handle_consent  # STEP 5
+from app.deletion import handle_delete  # PILOT 8: delete my data
 from app.db import init_db, upsert_inbound_user  # NEW
 from app.photo import handle_med_no, handle_photo  # STEP 4 (PILOT 3: MED_YES moved to setup.py)
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
@@ -63,6 +64,8 @@ async def receive(request: Request):
 # STEP 2: everything below is new
 async def handle_message(user, msg, is_new):
     if await handle_access(user, msg, is_new):  # PILOT 1: new numbers wait for the admin
+        return
+    if await handle_delete(user, msg):  # PILOT 8: before consent, so it works after STOP too
         return
     if await handle_consent(user, msg):  # STEP 5: consent and STOP come first
         return
