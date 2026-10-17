@@ -55,9 +55,9 @@ TEXTS = {
         "en": "MoPH price: {price} LL",
         "ar": "سعر وزارة الصحة: {price} ل.ل.",
     },
-    "declined": {
-        "en": "OK, I didn't save it. Send a clearer photo, or ask your pharmacist.",
-        "ar": "ماشي، ما سجّلتو. بعتلي صورة أوضح، أو اسأل الصيدلي.",
+    "declined": {  # PILOT 4: also mentions typing the name
+        "en": "OK, I didn't save it. Send a clearer photo of the box, type the medicine name, or ask your pharmacist.",
+        "ar": "ماشي، ما سجّلتو. ابعتلي صورة أوضح للعلبة، أو اكتب اسم الدوا، أو اسأل الصيدلي.",
     },
     "unknown": {
         "en": "Saved. Note: I can't check {new} against your other medicines for double doses yet. Ask your pharmacist if you're not sure.",
@@ -84,9 +84,9 @@ TEXTS = {
         "en": "I stopped your reminders and alerts. Send me a message any time to start again.",
         "ar": "وقّفت التذكير والتنبيهات. إذا بدك ترجع، ابعتلي رسالة.",
     },
-    "menu": {
-        "en": "I'm Dalil. I remind you when a dose is due. Send me a photo of a medicine box to check it. Type STOP to stop everything.",
-        "ar": "أنا دليل. بذكّرك بأدويتك بوقتها. ابعتلي صورة علبة دوا لإفحصها. اكتب «وقف» لتوقّف كل شي.",
+    "menu": {  # PILOT 4: typed names work after setup too
+        "en": "I'm Dalil. I remind you when a dose is due. To add a medicine, send me a photo of the box or type its name. Type STOP to stop everything.",
+        "ar": "أنا دليل. بذكّرك بأدويتك بوقتها. لتزيد دوا، ابعتلي صورة العلبة أو اكتب اسمو. اكتب «وقف» لتوقّف كل شي.",
     },
 }
 
@@ -253,6 +253,47 @@ SETUP = {
         "en": "tomorrow at {time}",
         "ar": "بكرا الساعة {time}",
     },
+    # PILOT 4: the family alert question ("For me" path)
+    "family_ask": {
+        "en": "Last question: should I tell someone in your family if you miss a dose?",
+        "ar": "آخر سؤال: بدك خبّر حدا من عيلتك إذا ما أخدت دوا؟",
+    },
+    "family_name": {
+        "en": "What's their name? You can also share their contact with me.",
+        "ar": "شو اسم الشخص؟ فيك كمان تبعتلي الكونتاكت.",
+    },
+    "family_phone": {
+        "en": "What's {family}'s WhatsApp number? For example 03 123 456 or +961 3 123 456.",
+        "ar": "شو رقم الواتساب تبع {family}؟ متل 03 123 456 أو 961 3 123 456.",
+    },
+    "bad_phone": {
+        "en": "That doesn't look like a phone number. Type it like 03 123 456. For a number outside Lebanon, start with + and the country code.",
+        "ar": "هيدا ما بيشبه رقم تلفون. اكتبو متل 03 123 456. إذا الرقم برّا لبنان، ابدا بـ + ومفتاح البلد.",
+    },
+    "own_phone": {
+        "en": "That's your own number. Type {family}'s number.",
+        "ar": "هيدا رقمك إنت. اكتب رقم {family}.",
+    },
+    "family_linked": {
+        "en": "Done: I'll tell {family} if you miss a dose.",
+        "ar": "تمام: رح خبّر {family} إذا ما أخدت دوا.",
+    },
+    "family_invite": {
+        "en": "Saved. Ask {family} to send \"hi\" to this WhatsApp number (you can forward my contact). Once {family} agrees, I'll tell them if you miss a dose.",
+        "ar": "سجّلت. قول لـ{family} يبعت «hi» على هالرقم عالواتساب (فيك تبعتلو الكونتاكت تبعي). بس يوافق، رح خبّرو إذا ما أخدت دوا.",
+    },
+    "family_added_you": {
+        "en": "{patient} added you as family on Dalil. If {patient} misses a dose, I'll send you a message.",
+        "ar": "{patient} زادك كشخص من العيلة على دليل. إذا {patient} ما أخد دوا، رح بعتلك مسج.",
+    },
+    "family_ready": {
+        "en": "You're set. If {patients} misses a dose, I'll send you a message.",
+        "ar": "كل شي جاهز. إذا {patients} ما أخد دوا، رح بعتلك مسج.",
+    },
+    "family_agreed": {
+        "en": "{family} agreed. I'll tell them if you miss a dose.",
+        "ar": "{family} وافق. رح خبّرو إذا ما أخدت دوا.",
+    },
 }
 FOR_WHOM_BUTTONS = {
     "en": [("FOR:me", "For me"), ("FOR:family", "For a family member")],
@@ -282,3 +323,17 @@ MORE_MED_BUTTONS = {
     "en": [("MORE:add", "Add another"), ("MORE:done", "Done")],
     "ar": [("MORE:add", "زيد دوا"), ("MORE:done", "خلصت")],
 }
+# PILOT 4: the family alert question and typed answers
+FAMILY_BUTTONS = {
+    "en": [("FAMILY:yes", "Yes"), ("FAMILY:no", "No, thanks")],
+    "ar": [("FAMILY:yes", "إيه"), ("FAMILY:no", "لا، شكراً")],
+}
+YES_WORDS = {"yes", "y", "eh", "ey", "aywa", "na3am", "إيه", "ايه", "اي", "أي", "نعم", "ايوا"}
+NO_WORDS = {"no", "n", "la", "la2", "laa", "لا", "لأ", "كلا"}
+DONE_WORDS = NO_WORDS | {"done", "finish", "finished", "that's all", "thats all", "khalas", "5alas",
+                         "خلص", "خلصت", "خلاص"}
+# Above the consent message for someone a patient added as family: both languages
+INVITED = (
+    "{patients} زادك على دليل لحتى تعرف إذا نسي دوا.\n"
+    "{patients} added you on Dalil so you know if they miss a dose."
+)

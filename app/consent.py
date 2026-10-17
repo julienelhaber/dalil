@@ -1,6 +1,6 @@
 from app.db import get_conn
 from app.reminders import lang_of
-from app.setup import start_setup  # PILOT 2
+from app.setup import invited_line, start_setup  # PILOT 2 (PILOT 4: invited_line)
 from app.texts import CONSENT_BUTTONS, CONSENT_NO, CONSENT_PROMPT, STOP_WORDS, TEXTS
 from app.whatsapp import send_buttons, send_text
 
@@ -33,6 +33,6 @@ async def handle_consent(user, msg):
         await send_text(to, TEXTS["stopped"][lang_of(user)])
         return True
     if not user["consent"]:
-        await send_buttons(to, CONSENT_PROMPT, CONSENT_BUTTONS)
+        await send_buttons(to, invited_line(user) + CONSENT_PROMPT, CONSENT_BUTTONS)  # PILOT 4
         return True
     return False

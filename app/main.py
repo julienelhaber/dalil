@@ -9,7 +9,7 @@ from app.consent import handle_consent  # STEP 5
 from app.db import init_db, upsert_inbound_user  # NEW
 from app.photo import handle_med_no, handle_photo  # STEP 4 (PILOT 3: MED_YES moved to setup.py)
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
-from app.setup import handle_setup  # PILOT 2
+from app.setup import handle_setup, offer_medicine  # PILOT 2 (PILOT 4: offer_medicine)
 from app.texts import TEXTS  # STEP 5
 from app.whatsapp import send_text
 
@@ -80,7 +80,9 @@ async def handle_message(user, msg, is_new):
             return
     elif kind == "text":
         text = msg["text"]["body"]  # STEP 3: a reason typed after Problem comes first
-        if await handle_typed_reason(user, text) or await handle_text(user, text):
+        if (await handle_typed_reason(user, text)
+                or await offer_medicine(user, text)  # PILOT 4: a medicine name typed after setup
+                or await handle_text(user, text)):
             return
     lang = "ar" if user["language"] == "ar" else "en"  # STEP 5: help instead of "Welcome back"
     await send_text(msg["from"], TEXTS["menu"][lang])

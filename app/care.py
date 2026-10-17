@@ -63,7 +63,9 @@ async def alert_unanswered():
                JOIN medicines m ON m.id = s.medicine_id
                JOIN users u ON u.id = m.patient_id
                JOIN care_links c ON c.patient_id = m.patient_id
+               JOIN users cu ON cu.id = c.caregiver_id  -- PILOT 4: only family who agreed
                WHERE e.status = 'pending' AND c.alert_on_missed = 1 AND u.consent = 1
+                 AND cu.consent = 1
                  AND datetime(e.due_at, '+' || c.alert_after_minutes || ' minutes')
                      <= datetime('now')
                  AND datetime(e.due_at) >= datetime('now', '-3 hours')"""
