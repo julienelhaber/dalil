@@ -483,9 +483,29 @@ MEDS = {
         "en": "Send me a photo of the box, or type its name.",
         "ar": "ابعتلي صورة العلبة، أو اكتب اسم الدوا.",
     },
-    "soon": {
-        "en": "Changing times and doses comes in the next update. For now, you can stop this medicine and add it again.",
-        "ar": "تغيير الوقت والجرعة جايي بالتحديث الجايي. هلّق فيك توقّف هالدوا وتزيدو من جديد.",
+    "times_now": {  # build step 2: changing times and the dose
+        "en": "{medicine} is at {times} now. Choose the new time.",
+        "ar": "{medicine} هلّق الساعة {times}. اختار الوقت الجديد.",
+    },
+    "new_times": {
+        "en": "New times for {medicine}: {times}. Do you take it at another time too?",
+        "ar": "الأوقات الجديدة لـ{medicine}: {times}. بتاخدو بوقت تاني كمان؟",
+    },
+    "times_saved": {
+        "en": "Saved: {medicine} at {times}. I'll only remind you at these times now.",
+        "ar": "سجّلت: {medicine} الساعة {times}. من هلّق بذكّرك بس بهالأوقات.",
+    },
+    "dose_saved": {
+        "en": "Saved: {medicine}, {detail}.",
+        "ar": "سجّلت: {medicine}، {detail}.",
+    },
+    "dose_no_time": {
+        "en": "{medicine} has no reminder time yet. Tap \"Change times\" to add one first.",
+        "ar": "{medicine} ما إلو وقت تذكير بعد. كبوس على «غيّر الوقت» لتزيد وقت أول.",
+    },
+    "unchanged": {
+        "en": "OK, I didn't change anything.",
+        "ar": "ماشي، ما غيّرت شي.",
     },
     "on_list": {
         "en": "{medicine} is already on your list. Change it?",

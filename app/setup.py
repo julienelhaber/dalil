@@ -588,7 +588,10 @@ def step_question(step, lang, data):
 async def resume(user, to, lang, step, data):
     """Say where we stopped, then ask that step's question again."""
     before = SETUP["continue"][lang] + "\n\n"
-    if step == "for_whom":
+    if step.startswith("change_"):  # PILOT 8: back after STOP in the middle of a change
+        from app.mymeds import ask_change  # here, because mymeds.py imports this file
+        await ask_change(to, lang, step, data, before=before)
+    elif step == "for_whom":
         await ask_for_whom(to, lang, user["name"], before=before)
     elif step == "dose":
         await ask_dose(to, lang, data, before=before)
@@ -650,6 +653,9 @@ async def handle_setup(user, msg):
             return True
         return False
     step = row["step"]
+    if step.startswith("change_"):  # PILOT 8: changing a medicine's times or dose
+        from app.mymeds import handle_change  # here, because mymeds.py imports this file
+        return await handle_change(user, msg, step, data)
     if kind == "text" and (is_greeting(text) or is_my_meds(text)):  # PILOT 7 (PILOT 8: the list waits)
         return await resume(user, to, lang, step, data)
     if kind == "text" and is_start_over(text) and (step in ("name", "for_whom") or "for" in data):
