@@ -93,9 +93,9 @@ TEXTS = {
         "en": "I stopped your reminders and alerts. Send me a message any time to start again.",
         "ar": "وقّفت التذكير والتنبيهات. إذا بدك ترجع، ابعتلي رسالة.",
     },
-    "menu": {  # PILOT 4: typed names work after setup too
-        "en": "I'm Dalil. I remind you when a dose is due. To add a medicine, send me a photo of the box or type its name. Type STOP to stop everything.",
-        "ar": "أنا دليل. بذكّرك بأدويتك بوقتها. لتزيد دوا، ابعتلي صورة العلبة أو اكتب اسمو. اكتب «وقف» لتوقّف كل شي.",
+    "menu": {  # PILOT 4: typed names work after setup too (PILOT 8: + my medicines)
+        "en": "I'm Dalil. I remind you when a dose is due. To add a medicine, send me a photo of the box or type its name. Type MY MEDICINES to see or change your list. Type STOP to stop everything.",
+        "ar": "أنا دليل. بذكّرك بأدويتك بوقتها. لتزيد دوا، ابعتلي صورة العلبة أو اكتب اسمو. اكتب «أدويتي» لتشوف أو تغيّر لائحتك. اكتب «وقف» لتوقّف كل شي.",
     },
 }
 
@@ -242,17 +242,17 @@ SETUP = {
         "en": "Saved: {medicine}, {dose} at {times}. I'll remind you at those times.",
         "ar": "سجّلت: {medicine}، {dose} الساعة {times}. رح ذكّرك بهالأوقات.",
     },
-    "summary": {
-        "en": "You're all set, {name}!\n\n{lines}\n\nYour first reminder is {first}. Type STOP at any time to stop everything.",
-        "ar": "كل شي جاهز يا {name}!\n\n{lines}\n\nأول تذكير {first}. اكتب «وقف» بأي وقت لتوقّف كل شي.",
+    "summary": {  # PILOT 8: + my medicines
+        "en": "You're all set, {name}!\n\n{lines}\n\nYour first reminder is {first}. Type MY MEDICINES to see or change them, or STOP at any time to stop everything.",
+        "ar": "كل شي جاهز يا {name}!\n\n{lines}\n\nأول تذكير {first}. اكتب «أدويتي» لتشوفهن أو تغيّرهن، أو «وقف» بأي وقت لتوقّف كل شي.",
     },
-    "line": {
-        "en": "• {medicine}: {dose} at {times}",
-        "ar": "• {medicine}: {dose} الساعة {times}",
+    "detail": {  # PILOT 8: was "line"; setup.medicine_lines adds the "• name: " part
+        "en": "{dose} at {times}",
+        "ar": "{dose} الساعة {times}",
     },
-    "line_no_time": {
-        "en": "• {medicine}: no reminder time yet",
-        "ar": "• {medicine}: بعد ما في وقت للتذكير",
+    "no_time": {
+        "en": "no reminder time yet",
+        "ar": "بعد ما في وقت للتذكير",
     },
     "today": {
         "en": "today at {time}",
@@ -357,9 +357,9 @@ SETUP = {
         "en": "{parent}'s first reminder is {first}. I'll tell you if {parent} misses a dose.",
         "ar": "أول تذكير لـ{parent} {first}. رح خبّرك إذا {parent} ما أخد دوا.",
     },
-    "parent_ready": {
-        "en": "You're set. Your medicines:\n\n{lines}\n\nYour first reminder is {first}.",
-        "ar": "كل شي جاهز. أدويتك:\n\n{lines}\n\nأول تذكير {first}.",
+    "parent_ready": {  # PILOT 8: + my medicines
+        "en": "You're set. Your medicines:\n\n{lines}\n\nYour first reminder is {first}. Type MY MEDICINES to see or change them.",
+        "ar": "كل شي جاهز. أدويتك:\n\n{lines}\n\nأول تذكير {first}. اكتب «أدويتي» لتشوفهن أو تغيّرهن.",
     },
     "parent_agreed": {
         "en": "{parent} agreed. The first reminder is {first}.",
@@ -430,3 +430,77 @@ GREETINGS = {"hi", "hii", "hey", "hello", "helo", "hallo", "hola", "salut", "bon
              "مساء الخير", "السلام عليكم", "سلام عليكم"}
 START_OVER_WORDS = {"start over", "restart", "start again", "begin again", "reset", "from the start",
                     "من الأول", "من الاول", "من أول", "من اول", "من جديد", "mn jdid", "min jdid"}
+# PILOT 8: "my medicines"
+MY_MEDS_WORDS = {"my medicines", "medicines", "my meds", "meds", "my medication", "medication",
+                 "medications", "my list", "adwiti", "adweyti", "adwiyti", "adwyti", "adwiye",
+                 "أدويتي", "ادويتي", "الأدوية", "الادوية", "أدوية", "ادوية"}
+MEDS = {
+    "list": {
+        "en": "Your medicines:\n\n{lines}\n\nTap \"Change\" to pick one.",
+        "ar": "أدويتك:\n\n{lines}\n\nكبوس على «غيّر» لتختار واحد.",
+    },
+    "list_button": {
+        "en": "Change",
+        "ar": "غيّر",
+    },
+    "add_row": {
+        "en": "Add a medicine",
+        "ar": "زيد دوا",
+    },
+    "none": {
+        "en": "You have no medicines saved yet. Send a photo of the box, or type its name.",
+        "ar": "ما عندك أدوية مسجّلة بعد. ابعتلي صورة العلبة، أو اكتب اسم الدوا.",
+    },
+    "what": {
+        "en": "{medicine}: {detail}. What do you want to change?",
+        "ar": "{medicine}: {detail}. شو بدك تغيّر؟",
+    },
+    "stop_ask": {
+        "en": "Stop {medicine}? I won't send its reminders anymore.",
+        "ar": "بدك توقّف {medicine}؟ ما رح ابعتلك تذكيرو بعد.",
+    },
+    "stopped": {
+        "en": "Stopped {medicine}. Your other reminders stay the same.",
+        "ar": "وقّفت {medicine}. باقي التذكيرات متل ما هي.",
+    },
+    "stopped_last": {
+        "en": "Stopped {medicine}. You have no medicines left, so no reminders. Send a photo of a box or type a name to add one.",
+        "ar": "وقّفت {medicine}. ما بقى عندك أدوية، يعني ما في تذكير. ابعتلي صورة علبة أو اكتب اسم دوا لتزيد واحد.",
+    },
+    "kept": {
+        "en": "OK, {medicine} stays as it is.",
+        "ar": "ماشي، {medicine} بيضل متل ما هو.",
+    },
+    "already_stopped": {
+        "en": "{medicine} is already stopped. Type MY MEDICINES to see your list.",
+        "ar": "{medicine} موقّف من قبل. اكتب «أدويتي» لتشوف لائحتك.",
+    },
+    "not_yours": {
+        "en": "You can't change {patient}'s medicines.",
+        "ar": "ما فيك تغيّر أدوية {patient}.",
+    },
+    "add": {
+        "en": "Send me a photo of the box, or type its name.",
+        "ar": "ابعتلي صورة العلبة، أو اكتب اسم الدوا.",
+    },
+    "soon": {
+        "en": "Changing times and doses comes in the next update. For now, you can stop this medicine and add it again.",
+        "ar": "تغيير الوقت والجرعة جايي بالتحديث الجايي. هلّق فيك توقّف هالدوا وتزيدو من جديد.",
+    },
+    "on_list": {
+        "en": "{medicine} is already on your list. Change it?",
+        "ar": "{medicine} موجود بلائحتك. بدك تغيّرو؟",
+    },
+}
+MED_ACTION_BUTTONS = {
+    "en": [("MTIMES", "Change times"), ("MDOSE", "Change dose"), ("MSTOP", "Stop it")],
+    "ar": [("MTIMES", "غيّر الوقت"), ("MDOSE", "غيّر الجرعة"), ("MSTOP", "وقّفو")],
+}
+STOP_MED_BUTTONS = {
+    "en": [("MSTOPYES", "Yes, stop it"), ("MKEEP", "No, keep it")],
+    "ar": [("MSTOPYES", "إيه، وقّفو"), ("MKEEP", "لا، خلّيه")],
+}
+ON_LIST_BUTTONS = {
+    "en": [("MYMED", "Change it"), ("MSAME", "Add another one")],
+    "ar": [("MYMED", "غيّرو"), ("MSAME", "زيد واحد تاني")],
+}

@@ -7,9 +7,9 @@ from app.db import find_user, get_conn, now_utc
 from app.photo import drug_name, find_drugs, save_medicine  # PILOT 3
 from app.reminders import BEIRUT, lang_of, word_action
 from app.texts import (DONE_WORDS, DOSE_BUTTONS, FAMILY_BUTTONS, FOR_WHOM_BUTTONS, FOR_WHOM_WORDS,
-                       GREETINGS, INVITED, INVITED_PARENT, MORE_MED_BUTTONS, MORE_TIME_BUTTONS, NO_WORDS,
-                       NOT_FOUND_BUTTONS, PARENT_LANG_BUTTONS, SETUP, START_OVER_WORDS, TEXTS, TIME_ROWS,
-                       YES_NO, YES_WORDS)
+                       GREETINGS, INVITED, INVITED_PARENT, MEDS, MORE_MED_BUTTONS, MORE_TIME_BUTTONS,
+                       MY_MEDS_WORDS, NO_WORDS, NOT_FOUND_BUTTONS, ON_LIST_BUTTONS, PARENT_LANG_BUTTONS,
+                       SETUP, START_OVER_WORDS, TEXTS, TIME_ROWS, YES_NO, YES_WORDS)
 from app.whatsapp import send_buttons, send_list, send_template, send_text
 
 # PILOT 3: button and menu ids that belong to the setup chat (PILOT 4: + FAMILY:, PILOT 5: + PLANG:)
@@ -117,6 +117,11 @@ def is_greeting(text):
     return plain(text) in GREETINGS
 
 
+def is_my_meds(text):
+    """PILOT 8: my medicines, adwiti, أدويتي..."""
+    return plain(text) in MY_MEDS_WORDS
+
+
 def is_start_over(text):
     """PILOT 7: start over, restart, mn el awal, من الأول..."""
     t = plain(text)
@@ -215,6 +220,20 @@ def medicine_info(conn, medicine_id):
     return name, times
 
 
+def medicine_detail(conn, medicine_id, lang):
+    """PILOT 8: "1 pill at 08:00, 20:00" (or "no reminder time yet"), and its times."""
+    rows = conn.execute(
+        """SELECT time_of_day, dose_amount FROM schedules
+           WHERE medicine_id = ? AND active = 1 ORDER BY time_of_day""",
+        (medicine_id,),
+    ).fetchall()
+    if not rows:
+        return SETUP["no_time"][lang], []
+    times = [r["time_of_day"] for r in rows]
+    return SETUP["detail"][lang].format(
+        dose=dose_text(rows[0]["dose_amount"], lang), times=", ".join(times)), times
+
+
 def medicine_lines(conn, patient_id, lang):
     """Each medicine with its dose and times, and every reminder time."""
     lines, all_times = [], []
@@ -223,19 +242,9 @@ def medicine_lines(conn, patient_id, lang):
         (patient_id,),
     ).fetchall()
     for med in meds:
-        rows = conn.execute(
-            """SELECT time_of_day, dose_amount FROM schedules
-               WHERE medicine_id = ? AND active = 1 ORDER BY time_of_day""",
-            (med["id"],),
-        ).fetchall()
-        if rows:
-            times = [r["time_of_day"] for r in rows]
-            all_times += times
-            lines.append(SETUP["line"][lang].format(
-                medicine=med["display_name"], dose=dose_text(rows[0]["dose_amount"], lang),
-                times=", ".join(times)))
-        else:
-            lines.append(SETUP["line_no_time"][lang].format(medicine=med["display_name"]))
+        detail, times = medicine_detail(conn, med["id"], lang)  # PILOT 8: shared with "my medicines"
+        all_times += times
+        lines.append(f"• {med['display_name']}: {detail}")
     return "\n".join(lines), all_times
 
 
@@ -341,8 +350,25 @@ async def offer_medicine(user, text):
     drugs = find_drugs(text)
     if not drugs:
         return False
-    await offer_drugs(user["phone"], lang_of(user), drugs)
+    lang = lang_of(user)
+    with get_conn() as conn:  # PILOT 8: already on the list? Offer to change it instead
+        listed = listed_medicine(conn, user["id"], drugs[0]["brand_name"])
+    if listed:
+        await send_buttons(user["phone"], MEDS["on_list"][lang].format(medicine=listed["display_name"]),
+                           [(f"{k}:{listed['id']}", t) for k, t in ON_LIST_BUTTONS[lang]])
+        return True
+    await offer_drugs(user["phone"], lang, drugs)
     return True
+
+
+def listed_medicine(conn, patient_id, brand):
+    """PILOT 8: a medicine on the list with this brand (the closest match to what was typed).
+    Only the closest one: typing "concor" with Concor Plus on the list is a new medicine."""
+    return conn.execute(
+        """SELECT m.* FROM medicines m JOIN drug_reference d ON d.id = m.drug_id
+           WHERE m.patient_id = ? AND m.active = 1 AND d.brand_name = ? ORDER BY m.id""",
+        (patient_id, brand),
+    ).fetchone()
 
 
 async def medicine_chosen(user, to, lang, data, drug_id=None, typed=None):
@@ -624,7 +650,7 @@ async def handle_setup(user, msg):
             return True
         return False
     step = row["step"]
-    if kind == "text" and is_greeting(text):  # PILOT 7: "hi" is never a name or a medicine
+    if kind == "text" and (is_greeting(text) or is_my_meds(text)):  # PILOT 7 (PILOT 8: the list waits)
         return await resume(user, to, lang, step, data)
     if kind == "text" and is_start_over(text) and (step in ("name", "for_whom") or "for" in data):
         return await start_over(user, to, lang, data)  # PILOT 7: in setup only, not when adding one medicine later

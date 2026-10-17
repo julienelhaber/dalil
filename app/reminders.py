@@ -93,7 +93,8 @@ async def resend_later():
                JOIN schedules s ON s.id = e.schedule_id
                JOIN medicines m ON m.id = s.medicine_id
                JOIN users u ON u.id = m.patient_id
-               WHERE e.status = 'later' AND e.responded_at <= ? AND u.consent = 1""",
+               WHERE e.status = 'later' AND e.responded_at <= ? AND u.consent = 1
+                 AND m.active = 1""",  # PILOT 8: not for a stopped medicine
             (cutoff,),
         ).fetchall()
         for row in rows:  # STEP 9

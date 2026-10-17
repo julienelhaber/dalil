@@ -9,7 +9,8 @@ from app.consent import handle_consent  # STEP 5
 from app.db import init_db, upsert_inbound_user  # NEW
 from app.photo import handle_med_no, handle_photo  # STEP 4 (PILOT 3: MED_YES moved to setup.py)
 from app.reminders import handle_dose_reply, handle_text, scheduler_loop, send_reminder  # STEP 2
-from app.setup import handle_setup, offer_medicine  # PILOT 2 (PILOT 4: offer_medicine)
+from app.mymeds import MY_MEDS_IDS, handle_my_meds_reply, show_list  # PILOT 8
+from app.setup import handle_setup, is_my_meds, offer_medicine  # PILOT 2 (PILOT 4, PILOT 8)
 from app.texts import TEXTS  # STEP 5
 from app.whatsapp import send_text
 
@@ -72,7 +73,8 @@ async def handle_message(user, msg, is_new):
         if await handle_reply_id(user, msg["button"].get("payload", "")):
             return
     elif kind == "interactive":
-        reply_id = msg["interactive"].get("button_reply", {}).get("id", "")
+        reply = msg["interactive"]  # PILOT 8: menu rows too ("my medicines")
+        reply_id = (reply.get("button_reply") or reply.get("list_reply") or {}).get("id", "")
         if await handle_reply_id(user, reply_id):
             return
     elif kind == "image":  # STEP 4
@@ -80,7 +82,8 @@ async def handle_message(user, msg, is_new):
             return
     elif kind == "text":
         text = msg["text"]["body"]  # STEP 3: a reason typed after Problem comes first
-        if (await handle_typed_reason(user, text)
+        if ((is_my_meds(text) and await show_list(user))  # PILOT 8
+                or await handle_typed_reason(user, text)
                 or await offer_medicine(user, text)  # PILOT 4: a medicine name typed after setup
                 or await handle_text(user, text)):
             return
@@ -97,6 +100,8 @@ async def handle_reply_id(user, reply_id):
         return await handle_reason(user, int(parts[1]), parts[2])
     if parts[0] == "CHECK" and len(parts) == 2:  # STEP 3
         return await handle_check(user, int(parts[1]))
+    if parts[0] in MY_MEDS_IDS:  # PILOT 8
+        return await handle_my_meds_reply(user, reply_id)
     if parts[0] == "MED_NO":  # STEP 4
         return await handle_med_no(user)
     return False
