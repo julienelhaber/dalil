@@ -7,14 +7,16 @@ from app.db import find_user, get_conn, now_utc
 from app.photo import drug_name, find_drugs, save_medicine  # PILOT 3
 from app.reminders import BEIRUT, lang_of, word_action
 from app.texts import (DONE_WORDS, DOSE_BUTTONS, FAMILY_BUTTONS, FOR_WHOM_BUTTONS, FOR_WHOM_WORDS,
-                       INVITED, INVITED_PARENT, MORE_MED_BUTTONS, MORE_TIME_BUTTONS, NO_WORDS,
-                       NOT_FOUND_BUTTONS, PARENT_LANG_BUTTONS, SETUP, TEXTS, TIME_ROWS, YES_NO, YES_WORDS)
+                       GREETINGS, INVITED, INVITED_PARENT, MORE_MED_BUTTONS, MORE_TIME_BUTTONS, NO_WORDS,
+                       NOT_FOUND_BUTTONS, PARENT_LANG_BUTTONS, SETUP, START_OVER_WORDS, TEXTS, TIME_ROWS,
+                       YES_NO, YES_WORDS)
 from app.whatsapp import send_buttons, send_list, send_template, send_text
 
 # PILOT 3: button and menu ids that belong to the setup chat (PILOT 4: + FAMILY:, PILOT 5: + PLANG:)
 SETUP_IDS = ("FOR:", "MED_", "DOSE:", "TIME:", "TIMES:", "MORE:", "FAMILY:", "PLANG:")
 DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩٫", "0123456789.")
-KEEP = ("for", "parent_id", "parent")  # PILOT 5: what stays in the chat data from one medicine to the next
+# PILOT 5: what stays in the chat data from one medicine to the next (PILOT 7: + what start over removes)
+KEEP = ("for", "parent_id", "parent", "added", "parent_new", "link_new")
 HALF = {"half", "nos", "nus", "noss", "نص", "نصف", "½"}
 
 
@@ -103,6 +105,22 @@ def say(key, lang, data, **args):
     if data.get("parent") and key + "_for" in SETUP:
         key += "_for"
     return SETUP[key][lang].format(parent=data.get("parent"), **args)
+
+
+def plain(text):
+    """PILOT 7: lower case, no punctuation or emoji, no "dalil" at the end: "Hi Dalil!" -> "hi"."""
+    t = re.sub(r"[^\w\s']", "", text.lower())
+    return re.sub(r"\s+(dalil|دليل)$", "", " ".join(t.split()))
+
+
+def is_greeting(text):
+    return plain(text) in GREETINGS
+
+
+def is_start_over(text):
+    """PILOT 7: start over, restart, mn el awal, من الأول..."""
+    t = plain(text)
+    return t in START_OVER_WORDS or bool(re.fullmatch(r"(m[ie]?n|men) ?(e?l|al|l)? ?aw+[ae]?l", t))
 
 
 def two_choice(text):
@@ -236,7 +254,10 @@ async def start_setup(user, to, lang):
     with get_conn() as conn:
         patients = looked_after(conn, user["id"])  # PILOT 4
         carers = cared_by(conn, user["id"])  # PILOT 5
-        new = needs_setup(conn, user["id"])
+        row = conn.execute(
+            "SELECT step, data FROM conversations WHERE user_id = ?", (user["id"],)
+        ).fetchone()  # PILOT 7: back after STOP in the middle of setup
+        new = row is None and needs_setup(conn, user["id"])
         if new:
             set_step(conn, user["id"], "name", {})
         lines, all_times = medicine_lines(conn, user["id"], lang)
@@ -252,6 +273,8 @@ async def start_setup(user, to, lang):
             if c["consent"] and window_open(c):
                 await send_text(c["phone"], SETUP["parent_agreed"][lang_of(c)].format(
                     parent=user["name"], first=first_reminder(all_times, lang_of(c))))
+    if row:  # PILOT 7
+        await resume(user, to, lang, row["step"], json.loads(row["data"]))
     if new:
         await send_text(to, SETUP["ask_name"][lang])
 
@@ -267,11 +290,11 @@ async def tell_carers_no(user):
             await send_text(c["phone"], SETUP["parent_said_no"][lang_of(c)].format(parent=user["name"]))
 
 
-async def ask_for_whom(to, lang, name, again=False):
+async def ask_for_whom(to, lang, name, again=False, before=""):
     body = SETUP["for_whom"][lang].format(name=name)
     if again:
         body = SETUP["tap_button"][lang] + "\n\n" + body
-    await send_buttons(to, body, FOR_WHOM_BUTTONS[lang])
+    await send_buttons(to, before + body, FOR_WHOM_BUTTONS[lang])
 
 
 # PILOT 3: everything below is the medicine loop
@@ -335,38 +358,39 @@ async def medicine_chosen(user, to, lang, data, drug_id=None, typed=None):
         return True
     data = keep(data)  # PILOT 5: keeps the parent too
     data["medicine_id"] = medicine_id
+    data["added"] = data.get("added", []) + [medicine_id]  # PILOT 7: for start over
     with get_conn() as conn:
         set_step(conn, user["id"], "dose", data)
     await ask_dose(to, lang, data)
     return True
 
 
-async def ask_dose(to, lang, data, again=False):
+async def ask_dose(to, lang, data, again=False, before=""):
     with get_conn() as conn:
         name, _ = medicine_info(conn, data["medicine_id"])
     body = say("ask_dose", lang, data, medicine=name)  # PILOT 5
     if again:
         body = SETUP["dose_hint"][lang] + "\n\n" + body
-    await send_buttons(to, body, DOSE_BUTTONS[lang])
+    await send_buttons(to, before + body, DOSE_BUTTONS[lang])
 
 
-async def ask_time(to, lang, data, again=False):
+async def ask_time(to, lang, data, again=False, before=""):
     with get_conn() as conn:
         name, _ = medicine_info(conn, data["medicine_id"])
     body = say("ask_time", lang, data, medicine=name)  # PILOT 5
     if again:
         body = SETUP["time_hint"][lang] + "\n\n" + body
     rows = [(rid, title, "") for rid, title in TIME_ROWS[lang]]
-    await send_list(to, body, SETUP["time_button"][lang], rows)
+    await send_list(to, before + body, SETUP["time_button"][lang], rows)
 
 
-async def ask_more_times(to, lang, data, again=False):
+async def ask_more_times(to, lang, data, again=False, before=""):
     with get_conn() as conn:
         name, times = medicine_info(conn, data["medicine_id"])
     body = say("time_saved", lang, data, medicine=name, times=", ".join(times))  # PILOT 5
     if again:
         body = SETUP["tap_button"][lang] + "\n\n" + body
-    await send_buttons(to, body, MORE_TIME_BUTTONS[lang])
+    await send_buttons(to, before + body, MORE_TIME_BUTTONS[lang])
 
 
 async def add_time(user, to, lang, data, time):
@@ -428,11 +452,11 @@ async def finish_setup(user, to, lang, data=None):
 
 # PILOT 4: the family alert question ("For me" path)
 
-async def ask_family(to, lang, again=False):
+async def ask_family(to, lang, again=False, before=""):
     body = SETUP["family_ask"][lang]
     if again:
         body = SETUP["tap_button"][lang] + "\n\n" + body
-    await send_buttons(to, body, FAMILY_BUTTONS[lang])
+    await send_buttons(to, before + body, FAMILY_BUTTONS[lang])
 
 
 def find_or_add(conn, name, phone):
@@ -499,23 +523,81 @@ async def send_invite(user, parent, data):
     return r.status_code < 400
 
 
-async def ask_parent_lang(to, lang, data, again=False):
+async def ask_parent_lang(to, lang, data, again=False, before=""):
     body = SETUP["parent_lang"][lang].format(parent=data["parent"])
     if again:
         body = SETUP["tap_button"][lang] + "\n\n" + body
-    await send_buttons(to, body, PARENT_LANG_BUTTONS[lang])
+    await send_buttons(to, before + body, PARENT_LANG_BUTTONS[lang])
 
 async def add_parent(user, to, lang, data, name, phone):
     """Link the person the medicines are for (new if not on Dalil yet), then the medicine loop."""
     with get_conn() as conn:
+        parent_new = find_user(conn, None, phone) is None  # PILOT 7: start over removes a new parent
         parent = find_or_add(conn, name, phone)
-        conn.execute(
+        cur = conn.execute(
             "INSERT OR IGNORE INTO care_links (caregiver_id, patient_id, created_at) VALUES (?, ?, ?)",
             (user["id"], parent["id"], now_utc()),
         )
-        data.update(parent_id=parent["id"], parent=name)
+        data.update(parent_id=parent["id"], parent=name, parent_new=parent_new, link_new=cur.rowcount == 1)
         set_step(conn, user["id"], "medicine", data)
     await send_text(to, say("ask_medicine", lang, data))
+    return True
+
+
+# PILOT 7: coming back in the middle of setup, and starting over
+
+def step_question(step, lang, data):
+    """The question of a step that is answered by typing."""
+    if step == "medicine":
+        return SETUP["ask_next"][lang] if data.get("added") else say("ask_medicine", lang, data)
+    if step == "parent_phone":
+        return SETUP["parent_phone"][lang].format(parent=data["parent"])
+    if step == "family_phone":
+        return SETUP["family_phone"][lang].format(family=data["family_name"])
+    key = {"name": "ask_name", "parent_name": "parent_name", "other_time": "type_time",
+           "family_name": "family_name"}[step]
+    return SETUP[key][lang]
+
+
+async def resume(user, to, lang, step, data):
+    """Say where we stopped, then ask that step's question again."""
+    before = SETUP["continue"][lang] + "\n\n"
+    if step == "for_whom":
+        await ask_for_whom(to, lang, user["name"], before=before)
+    elif step == "dose":
+        await ask_dose(to, lang, data, before=before)
+    elif step == "time":
+        await ask_time(to, lang, data, before=before)
+    elif step == "more_times":
+        await ask_more_times(to, lang, data, before=before)
+    elif step == "more_meds":
+        await send_buttons(to, before + SETUP["next_or_done"][lang], MORE_MED_BUTTONS[lang])
+    elif step == "parent_lang":
+        await ask_parent_lang(to, lang, data, before=before)
+    elif step == "family":
+        await ask_family(to, lang, before=before)
+    else:
+        await send_text(to, before + step_question(step, lang, data))
+    return True
+
+
+async def start_over(user, to, lang, data):
+    """Remove what this setup saved (its medicines, and the parent link it made), then ask the name again."""
+    with get_conn() as conn:
+        for medicine_id in data.get("added", []):  # their schedules and doses go with them
+            conn.execute("DELETE FROM medicines WHERE id = ?", (medicine_id,))
+        if data.get("link_new"):
+            conn.execute("DELETE FROM care_links WHERE caregiver_id = ? AND patient_id = ?",
+                         (user["id"], data["parent_id"]))
+        if data.get("parent_new"):  # only if nothing else uses them and they never agreed
+            conn.execute(
+                """DELETE FROM users WHERE id = ? AND consent = 0 AND language IS NULL
+                   AND NOT EXISTS (SELECT 1 FROM care_links WHERE patient_id = users.id OR caregiver_id = users.id)
+                   AND NOT EXISTS (SELECT 1 FROM medicines WHERE patient_id = users.id)""",
+                (data["parent_id"],),
+            )
+        set_step(conn, user["id"], "name", {})
+    await send_text(to, SETUP["start_over"][lang] + "\n\n" + SETUP["ask_name"][lang])
     return True
 
 
@@ -542,6 +624,10 @@ async def handle_setup(user, msg):
             return True
         return False
     step = row["step"]
+    if kind == "text" and is_greeting(text):  # PILOT 7: "hi" is never a name or a medicine
+        return await resume(user, to, lang, step, data)
+    if kind == "text" and is_start_over(text) and (step in ("name", "for_whom") or "for" in data):
+        return await start_over(user, to, lang, data)  # PILOT 7: in setup only, not when adding one medicine later
 
     if step == "name":
         if not text or len(text) > 40:  # a photo, a button, or not a name

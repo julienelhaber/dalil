@@ -43,9 +43,9 @@ TEXTS = {
         "ar": "رسالة من {name}: «رح إتطمّن عليك».",
     },
     # Medicine photo (Step 4)
-    "not_sure": {
-        "en": "I'm not sure which medicine this is. Send a clearer photo of the front of the box, or ask your pharmacist.",
-        "ar": "مش متأكد شو هيدا الدوا. بعتلي صورة أوضح لقدّام العلبة، أو اسأل الصيدلي.",
+    "not_sure": {  # PILOT 7: says to type the name instead
+        "en": "I couldn't read this box. Type the medicine name instead, or send a clearer photo of the front of the box.",
+        "ar": "ما قدرت إقرا هالعلبة. اكتب اسم الدوا، أو ابعتلي صورة أوضح لقدّام العلبة.",
     },
     "confirm": {
         "en": "Is this {name}, box of {pack}?",
@@ -336,6 +336,15 @@ SETUP = {
         "en": "Now ask {parent} to send \"hi\" to this WhatsApp number from their phone (you can forward my contact). When {parent} taps Yes, the reminders start, and I'll tell you if {parent} misses a dose.",
         "ar": "هلّق قول لـ{parent} يبعت «hi» على هالرقم عالواتساب من تلفونو (فيك تبعتلو الكونتاكت تبعي). بس يكبس «إيه»، بيبلّش التذكير، ورح خبّرك إذا {parent} ما أخد دوا.",
     },
+    # PILOT 7: coming back in the middle of setup, and starting over
+    "continue": {
+        "en": "Let's continue where we stopped. (To begin again, type \"start over\".)",
+        "ar": "يلّا نكمّل من وين وقفنا. (إذا بدك تبلّش من الأول، اكتب «من الأول».)",
+    },
+    "start_over": {
+        "en": "OK, let's start over. I deleted what we saved in this setup.",
+        "ar": "ماشي، منبلّش من الأول. مسحت كل شي سجّلناه بهالمرة.",
+    },
     "parent_lang": {
         "en": "Which language should I use with {parent}?",
         "ar": "بأي لغة بحكي مع {parent}؟",
@@ -412,3 +421,12 @@ PARENT_LANG_BUTTONS = {
     "en": [("PLANG:ar", "Arabic"), ("PLANG:en", "English")],
     "ar": [("PLANG:ar", "عربي"), ("PLANG:en", "إنكليزي")],
 }
+# PILOT 7: in the middle of setup, a greeting repeats the last question. Not "hala" or "salam":
+# they are names too, and the first question is the name.
+GREETINGS = {"hi", "hii", "hey", "hello", "helo", "hallo", "hola", "salut", "bonjour", "bonsoir",
+             "marhaba", "mar7aba", "marhaban", "ahla", "ahlan", "ahleen", "kifak", "kifik", "kifkon",
+             "good morning", "good evening", "sabah el kheir", "saba7 el kheir", "salam alaykum",
+             "مرحبا", "أهلا", "اهلا", "أهلين", "اهلين", "كيفك", "صباح الخير", "مسا الخير",
+             "مساء الخير", "السلام عليكم", "سلام عليكم"}
+START_OVER_WORDS = {"start over", "restart", "start again", "begin again", "reset", "from the start",
+                    "من الأول", "من الاول", "من أول", "من اول", "من جديد", "mn jdid", "min jdid"}
